@@ -23,11 +23,8 @@ internal enum ImagePickerImageUtil {
     let originalWidth = image.size.width
     let originalHeight = image.size.height
 
-    let hasMaxWidth = maxWidth != nil
-    let hasMaxHeight = maxHeight != nil
-
-    let shouldDownscaleWidth = hasMaxWidth && maxWidth! < originalWidth
-    let shouldDownscaleHeight = hasMaxHeight && maxHeight! < originalHeight
+    let shouldDownscaleWidth = maxWidth.map { $0 < originalWidth } ?? false
+    let shouldDownscaleHeight = maxHeight.map { $0 < originalHeight } ?? false
     let shouldDownscale = shouldDownscaleWidth || shouldDownscaleHeight
 
     if !shouldDownscale {
@@ -36,8 +33,8 @@ internal enum ImagePickerImageUtil {
 
     let aspectRatio = originalWidth / originalHeight
 
-    var width = hasMaxWidth ? round(maxWidth!) : originalWidth
-    var height = hasMaxHeight ? round(maxHeight!) : originalHeight
+    var width = maxWidth.map { round($0) } ?? originalWidth
+    var height = maxHeight.map { round($0) } ?? originalHeight
 
     let widthForMaxHeight = height * aspectRatio
     let heightForMaxWidth = width / aspectRatio
@@ -94,10 +91,9 @@ internal enum ImagePickerImageUtil {
         CGImageSourceCopyPropertiesAtIndex(imageSource, index, nil) as? [String: Any]
       let gifProperties = properties?[kCGImagePropertyGIFDictionary as String] as? [String: Any]
 
-      var delay = gifProperties?[kCGImagePropertyGIFUnclampedDelayTime as String] as? Double
-      if delay == nil {
-        delay = gifProperties?[kCGImagePropertyGIFDelayTime as String] as? Double
-      }
+      let delay =
+        (gifProperties?[kCGImagePropertyGIFUnclampedDelayTime as String] as? Double)
+        ?? (gifProperties?[kCGImagePropertyGIFDelayTime as String] as? Double)
 
       if interval == 0.0 {
         interval = delay ?? 0.1
@@ -113,9 +109,7 @@ internal enum ImagePickerImageUtil {
     return GIFInfo(images: images, interval: interval)
   }
 
-  private static func drawScaledImage(_ image: UIImage, width: Double, height: Double)
-    -> UIImage?
-  {
+  private static func drawScaledImage(_ image: UIImage, width: Double, height: Double) -> UIImage? {
     if width <= 0 || height <= 0 {
       return nil
     }

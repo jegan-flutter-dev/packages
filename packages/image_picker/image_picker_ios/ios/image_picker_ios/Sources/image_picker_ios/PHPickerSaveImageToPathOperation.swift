@@ -21,7 +21,7 @@ internal final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sen
 
   private var _executing: Bool = false
   override var isExecuting: Bool {
-    get { return _executing }
+    get { _executing }
     set {
       willChangeValue(forKey: "isExecuting")
       _executing = newValue
@@ -31,7 +31,7 @@ internal final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sen
 
   private var _finished: Bool = false
   override var isFinished: Bool {
-    get { return _finished }
+    get { _finished }
     set {
       willChangeValue(forKey: "isFinished")
       _finished = newValue
@@ -57,7 +57,7 @@ internal final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sen
   }
 
   override var isAsynchronous: Bool {
-    return true
+    true
   }
 
   override func start() {
@@ -129,9 +129,10 @@ internal final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sen
     if let savedPath = savedPath {
       completeOperation(path: savedPath, error: nil)
     } else {
-      let error = PigeonError(
-        code: "image_save_failed", message: "Could not save image to disk.", details: nil)
-      completeOperation(path: nil, error: error)
+      completeOperation(
+        path: nil,
+        error: PigeonError(
+          code: "image_save_failed", message: "Could not save image to disk.", details: nil))
     }
   }
 
@@ -159,8 +160,7 @@ internal final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sen
         return
       }
 
-      let destination = ImagePickerPhotoAssetUtil.saveVideo(from: videoURL)
-      if let destination = destination {
+      if let destination = ImagePickerPhotoAssetUtil.saveVideo(from: videoURL) {
         self.completeOperation(path: destination.path, error: nil)
       } else {
         self.completeOperation(

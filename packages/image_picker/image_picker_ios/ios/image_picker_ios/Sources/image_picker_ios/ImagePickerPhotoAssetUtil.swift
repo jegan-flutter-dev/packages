@@ -10,7 +10,7 @@ import UniformTypeIdentifiers
 
 internal enum ImagePickerPhotoAssetUtil {
   static func getAsset(from info: [UIImagePickerController.InfoKey: Any]) -> PHAsset? {
-    return info[.phAsset] as? PHAsset
+    info[.phAsset] as? PHAsset
   }
 
   static func saveVideo(from videoURL: URL) -> URL? {
@@ -59,20 +59,20 @@ internal enum ImagePickerPhotoAssetUtil {
         maxHeight: maxHeight)
 
       return saveImage(with: metaData, gifInfo: gifInfo, suffix: suffix)
-    } else {
-      let scaledImage = ImagePickerImageUtil.scaledImage(
-        image,
-        maxWidth: maxWidth,
-        maxHeight: maxHeight,
-        isMetadataAvailable: metaData != nil)
-
-      return saveImage(
-        with: metaData,
-        image: scaledImage,
-        suffix: suffix,
-        type: type,
-        imageQuality: imageQuality)
     }
+
+    let scaledImage = ImagePickerImageUtil.scaledImage(
+      image,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      isMetadataAvailable: metaData != nil)
+
+    return saveImage(
+      with: metaData,
+      image: scaledImage,
+      suffix: suffix,
+      type: type,
+      imageQuality: imageQuality)
   }
 
   static func saveImage(
@@ -111,6 +111,7 @@ internal enum ImagePickerPhotoAssetUtil {
     else {
       return nil
     }
+
     if let metaData = metaData,
       let updatedData = ImagePickerMetaDataUtil.image(from: data, with: metaData)
     {
@@ -162,16 +163,12 @@ internal enum ImagePickerPhotoAssetUtil {
       }
     }
 
-    guard CGImageDestinationFinalize(destination) else {
-      return nil
-    }
-
-    return path
+    return CGImageDestinationFinalize(destination) ? path : nil
   }
 
   private static func temporaryFilePath(for suffix: String) -> String? {
     let guid = ProcessInfo.processInfo.globallyUniqueString
-    let tmpFile = String(format: "image_picker_%@%@", guid, suffix)
+    let tmpFile = "image_picker_\(guid)\(suffix)"
     let tmpDirectory = NSTemporaryDirectory()
     let tmpPath = (tmpDirectory as NSString).appendingPathComponent(tmpFile)
     return tmpPath
@@ -181,9 +178,7 @@ internal enum ImagePickerPhotoAssetUtil {
     guard let tmpPath = temporaryFilePath(for: suffix) else {
       return nil
     }
-    if FileManager.default.createFile(atPath: tmpPath, contents: data, attributes: nil) {
-      return tmpPath
-    }
-    return nil
+    return FileManager.default.createFile(atPath: tmpPath, contents: data, attributes: nil)
+      ? tmpPath : nil
   }
 }

@@ -19,12 +19,7 @@ internal enum ImagePickerMetaDataUtil {
 
   /// Retrieve MIME type by reading the image data. We currently only support some popular types.
   static func getImageMIMEType(from imageData: Data) -> ImagePickerMIMEType {
-    if imageData.isEmpty {
-      return .other
-    }
-    var firstByte: UInt8 = 0
-    imageData.copyBytes(to: &firstByte, count: 1)
-    switch firstByte {
+    switch imageData.first {
     case 0xFF:
       return .jpeg
     case 0x89:
@@ -54,8 +49,7 @@ internal enum ImagePickerMetaDataUtil {
     guard let source = CGImageSourceCreateWithData(imageData as CFData, nil) else {
       return nil
     }
-    let metadata = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
-    return metadata
+    return CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
   }
 
   /// Creates and returns data for a new image based on imageData, but with the
@@ -83,7 +77,7 @@ internal enum ImagePickerMetaDataUtil {
     using type: ImagePickerMIMEType,
     quality: Double?
   ) -> Data? {
-    if quality != nil && type != .jpeg {
+    if quality != nil, type != .jpeg {
       print(
         "image_picker: compressing is not supported for type \(type). Returning the image with original quality"
       )

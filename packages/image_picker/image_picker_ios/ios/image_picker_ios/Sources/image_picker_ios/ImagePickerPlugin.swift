@@ -62,8 +62,7 @@ internal final class DefaultDeviceCapabilityHandler: DeviceCapabilityHandler {
 @objc(ImagePickerPlugin)
 public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
   UINavigationControllerDelegate, UIImagePickerControllerDelegate,
-  PHPickerViewControllerDelegate, UIAdaptivePresentationControllerDelegate
-{
+  PHPickerViewControllerDelegate, UIAdaptivePresentationControllerDelegate {
 
   internal var imagePickerControllerOverrides: [UIImagePickerController]?
   internal let viewProvider: ViewProvider
@@ -91,18 +90,22 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
   }
 
   func createImagePickerController() -> UIImagePickerController {
-    if let overrides = imagePickerControllerOverrides, !overrides.isEmpty {
-      return imagePickerControllerOverrides!.removeFirst()
-    }
-    return UIImagePickerController()
+      guard var overrides = imagePickerControllerOverrides,
+            !overrides.isEmpty
+      else {
+        return UIImagePickerController()
+      }
+
+      let controller = overrides.removeFirst()
+      imagePickerControllerOverrides = overrides
+      return controller
   }
 
   func setImagePickerControllerOverrides(_ overrides: [UIImagePickerController]) {
     imagePickerControllerOverrides = overrides
   }
 
-  internal func cameraDevice(for source: SourceSpecification) -> UIImagePickerController.CameraDevice
-  {
+  internal func cameraDevice(for source: SourceSpecification) -> UIImagePickerController.CameraDevice {
     switch source.camera {
     case .front:
       return .front
@@ -205,7 +208,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
     }
     context.includeImages = true
     context.maxSize = maxSize
-    context.imageQuality = imageQuality != nil ? Double(imageQuality!) : nil
+    context.imageQuality = imageQuality.map(Double.init)
     context.maxItemCount = 1
     context.requestFullMetadata = requestFullMetadata
 
@@ -234,9 +237,9 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
     }
     context.includeImages = true
     context.maxSize = maxSize
-    context.imageQuality = imageQuality != nil ? Double(imageQuality!) : nil
+    context.imageQuality = imageQuality.map(Double.init)
     context.requestFullMetadata = requestFullMetadata
-    context.maxItemCount = limit != nil ? Int(limit!) : 0
+    context.maxItemCount = limit.map(Int.init) ?? 0
 
     if #available(iOS 14, *) {
       launchPHPicker(with: context)
@@ -259,8 +262,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
       }
     }
     context.maxSize = mediaSelectionOptions.maxSize
-    context.imageQuality =
-      mediaSelectionOptions.imageQuality != nil ? Double(mediaSelectionOptions.imageQuality!) : nil
+    context.imageQuality = mediaSelectionOptions.imageQuality.map(Double.init)
     context.requestFullMetadata = mediaSelectionOptions.requestFullMetadata
     context.includeImages = true
     context.includeVideo = true
@@ -323,7 +325,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
       }
     }
     context.includeVideo = true
-    context.maxItemCount = limit != nil ? Int(limit!) : 0
+    context.maxItemCount = limit.map(Int.init) ?? 0
     context.maxDuration = TimeInterval(maxDurationSeconds ?? 0)
 
     if #available(iOS 14, *) {
@@ -354,8 +356,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
     }
 
     if deviceCapabilityHandler.isSourceTypeAvailable(.camera)
-      && deviceCapabilityHandler.isCameraDeviceAvailable(device)
-    {
+      && deviceCapabilityHandler.isCameraDeviceAvailable(device) {
       imagePickerController.sourceType = .camera
       imagePickerController.cameraDevice = device
       let presentingController = presentingViewControllerForImagePickerInNewWindow()
@@ -406,15 +407,15 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
     case .notDetermined:
       deviceCapabilityHandler.requestPhotoLibraryAuthorization { [weak self] status in
         DispatchQueue.main.async {
-            if #available(iOS 14, *) {
-                if status == .authorized || status == .limited {
-                    self?.showPhotoLibrary(with: pickerViewController)
-                } else {
-                    self?.errorNoPhotoAccess(status)
-                }
+          if #available(iOS 14, *) {
+            if status == .authorized || status == .limited {
+              self?.showPhotoLibrary(with: pickerViewController)
             } else {
-                // Fallback on earlier versions
+              self?.errorNoPhotoAccess(status)
             }
+          } else {
+            // Fallback on earlier versions
+          }
         }
       }
     case .authorized, .limited:
@@ -554,10 +555,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         sendCallResult(pathList: [videoURL.path])
       }
     } else {
-      var image = info[.editedImage] as? UIImage
-      if image == nil {
-        image = info[.originalImage] as? UIImage
-      }
+      let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage)
 
       guard let image = image else {
         let pigeonError = PigeonError(
@@ -571,10 +569,8 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
       let imageQuality = callContext?.imageQuality
       let desiredImageQuality = getDesiredImageQuality(imageQuality)
 
-      var originalAsset: PHAsset?
-      if callContext?.requestFullMetadata == true {
-        originalAsset = ImagePickerPhotoAssetUtil.getAsset(from: info)
-      }
+      let originalAsset =
+        (callContext?.requestFullMetadata == true) ? ImagePickerPhotoAssetUtil.getAsset(from: info) : nil
 
       var processedImage = image
       if maxWidth != nil || maxHeight != nil {
@@ -585,9 +581,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
           isMetadataAvailable: true)
       }
 
-      if originalAsset == nil {
-        saveImage(withPickerInfo: info, image: processedImage, imageQuality: desiredImageQuality)
-      } else {
+      if let originalAsset = originalAsset {
         let resultHandler: (Data?, [AnyHashable: Any]?) -> Void = {
           [weak self] imageData, info in
           self?.saveImage(
@@ -599,16 +593,20 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         }
 
         if #available(iOS 13.0, *) {
-          PHImageManager.default().requestImageDataAndOrientation(for: originalAsset!, options: nil) {
-            data, _, _, info in
+          PHImageManager.default().requestImageDataAndOrientation(
+            for: originalAsset,
+            options: nil
+          ) { data, _, _, info in
             resultHandler(data, info)
           }
         } else {
-          PHImageManager.default().requestImageData(for: originalAsset!, options: nil) {
+          PHImageManager.default().requestImageData(for: originalAsset, options: nil) {
             data, _, _, info in
             resultHandler(data, info)
           }
         }
+      } else {
+        saveImage(withPickerInfo: info, image: processedImage, imageQuality: desiredImageQuality)
       }
     }
   }
@@ -635,7 +633,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       imageQuality: imageQuality)
-    sendCallResult(pathList: savedPath != nil ? [savedPath!] : [])
+    sendCallResult(pathList: savedPath.map { [$0] } ?? [])
   }
 
   private func saveImage(
@@ -647,7 +645,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
       with: info,
       image: image,
       imageQuality: imageQuality)
-    sendCallResult(pathList: savedPath != nil ? [savedPath!] : [])
+    sendCallResult(pathList: savedPath.map { [$0] } ?? [])
   }
 
   internal func sendCallResult(pathList: [String]? = nil, error: Error? = nil) {
@@ -657,14 +655,14 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
   }
 
   internal func presentingViewControllerForImagePickerInNewWindow() -> UIViewController {
-    if let blocker = interactionBlockerWindow {
-      return blocker.rootViewController!
+    if let blocker = interactionBlockerWindow, let rootViewController = blocker.rootViewController {
+      return rootViewController
     }
 
     guard let topController = viewProvider.viewController,
       let presentingWindow = topController.view.window
     else {
-      return viewProvider.viewController!
+      return viewProvider.viewController ?? UIViewController()
     }
 
     previousKeyWindow = presentingWindow
@@ -683,13 +681,13 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
     blockerWindow.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     blockerWindow.windowLevel = presentingWindow.windowLevel + 1
 
-    let vc = UIViewController()
-    vc.view.backgroundColor = .clear
-    vc.view.isUserInteractionEnabled = true
-    blockerWindow.rootViewController = vc
+    let viewController = UIViewController()
+    viewController.view.backgroundColor = .clear
+    viewController.view.isUserInteractionEnabled = true
+    blockerWindow.rootViewController = viewController
     blockerWindow.makeKeyAndVisible()
     interactionBlockerWindow = blockerWindow
-    return vc
+    return viewController
   }
 
   internal func removeInteractionBlocker() {
