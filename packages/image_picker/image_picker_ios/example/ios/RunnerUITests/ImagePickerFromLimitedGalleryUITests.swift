@@ -6,7 +6,6 @@ import XCTest
 
 @MainActor
 class ImagePickerFromLimitedGalleryUITests: XCTestCase {
-
   var app: XCUIApplication!
   let elementWaitingTime: TimeInterval = 60
 
@@ -14,13 +13,10 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
     try await super.setUp()
     continueAfterFailure = false
     app = XCUIApplication()
-
     if #available(iOS 13.4, *) {
       app.resetAuthorizationStatus(for: .photos)
     }
-
     app.launch()
-
     // Monitor for system alerts and handle them automatically.
     addUIInterruptionMonitor(withDescription: "Permission popups") { interruptingElement in
       let labels = [
@@ -49,7 +45,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
   private func handlePermissionInterruption() {
     // A small swipe can help trigger the interruption monitor.
     app.swipeUp(velocity: .slow)
-
     let springboardApp = XCUIApplication(bundleIdentifier: "com.apple.springboard")
     let labels = [
       "Allow Full Access", "Allow Access to All Photos", "Allow Access", "OK", "Allow",
@@ -72,7 +67,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
       app.otherElements[identifier],
       app.descendants(matching: .any)[identifier],
     ]
-
     for element in discoveryOrder {
       if element.exists {
         return element
@@ -91,7 +85,9 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
         if doneButton.exists {
           doneButton.tap()
         } else {
-          app.keyboards.element(boundBy: 0).coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: -0.05)).tap()
+          app.keyboards.element(boundBy: 0).coordinate(
+            withNormalizedOffset: CGVector(dx: 0.5, dy: -0.05)
+          ).tap()
         }
       }
       _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Wait for keyboard")], timeout: 1.0)
@@ -104,15 +100,12 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
     XCTAssertTrue(
       galleryButton.waitForExistence(timeout: elementWaitingTime), "Gallery button not found")
     galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-
     // 2. Tap the PICK button on the options screen with retry logic.
     let pickButton = app.buttons["PICK"].firstMatch
     if !pickButton.waitForExistence(timeout: 10) {
-        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+      galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
-
     XCTAssertTrue(pickButton.waitForExistence(timeout: elementWaitingTime), "PICK button not found")
-
     // The gallery (represented by the Cancel button) should appear after tapping PICK.
     let cancelButton = app.buttons["Cancel"].firstMatch
     var retryCount = 0
@@ -124,35 +117,29 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
       }
       retryCount += 1
     }
-
     // 3. Handle the photo picker.
     let picker = app.navigationBars["Photos"]
     if !picker.waitForExistence(timeout: 20) {
       handlePermissionInterruption()
     }
-
     // 4. Select an image.
     let firstImage = app.scrollViews.images.firstMatch
     XCTAssertTrue(
       firstImage.waitForExistence(timeout: elementWaitingTime), "No images found in picker.")
     // Use coordinate tap to avoid "not hittable" errors
     firstImage.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-
     // 5. Handle "Done" button if present (common in limited picker).
     let doneButton = app.buttons["Done"].firstMatch
     if doneButton.exists {
       doneButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
       _ = doneButton.waitForNonExistence(timeout: 20)
     }
-
     // 6. Verify the picker is dismissed.
     if cancelButton.exists && !cancelButton.waitForNonExistence(timeout: 10) {
       cancelButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
-
     XCTAssertTrue(
       cancelButton.waitForNonExistence(timeout: 30), "Picker did not dismiss after selection.")
-
     // 7. Verify the image was picked.
     let pickedImage = app.images["image_picker_example_picked_image"].firstMatch
     XCTAssertTrue(

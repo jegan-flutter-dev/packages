@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import AVFoundation
 import Flutter
-import XCTest
-import UIKit
 import Photos
 import PhotosUI
-import AVFoundation
+import UIKit
+import XCTest
 
 @testable import image_picker_ios
 
@@ -26,13 +26,12 @@ class ImagePickerPluginTests: XCTestCase {
     XCTAssertTrue(plugin.deviceCapabilityHandler is DefaultDeviceCapabilityHandler)
   }
 
-    func testCreateImagePickerController_ConfiguredCorrectly() {
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-        let picker = plugin.createImagePickerController()
+  func testCreateImagePickerController_ConfiguredCorrectly() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let picker = plugin.createImagePickerController()
 
-        XCTAssertNotNil(picker)
-    }
-
+    XCTAssertNotNil(picker)
+  }
 
   func testCreateImagePickerController_WithOverrides() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
@@ -52,11 +51,16 @@ class ImagePickerPluginTests: XCTestCase {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
-    XCTAssertNotNil(messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickImage"])
-    XCTAssertNotNil(messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiImage"])
-    XCTAssertNotNil(messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickVideo"])
-    XCTAssertNotNil(messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiVideo"])
-    XCTAssertNotNil(messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMedia"])
+    XCTAssertNotNil(
+      messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickImage"])
+    XCTAssertNotNil(
+      messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiImage"])
+    XCTAssertNotNil(
+      messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickVideo"])
+    XCTAssertNotNil(
+      messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiVideo"])
+    XCTAssertNotNil(
+      messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMedia"])
   }
 
   func testApiSetup_ClearsHandlers() {
@@ -71,9 +75,11 @@ class ImagePickerPluginTests: XCTestCase {
   func testApiSetup_WithSuffix() {
     let messenger = TestBinaryMessenger()
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-    ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin, messageChannelSuffix: "testSuffix")
+    ImagePickerApiSetup.setUp(
+      binaryMessenger: messenger, api: plugin, messageChannelSuffix: "testSuffix")
 
-    XCTAssertNotNil(messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickImage.testSuffix"])
+    XCTAssertNotNil(
+      messenger.handlers["dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickImage.testSuffix"])
   }
 
   func testPickImage_SetsCorrectCameraDevice() {
@@ -105,25 +111,35 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickVideo_WithZeroDuration_SetsCorrectContext() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-    plugin.pickVideo(source: SourceSpecification(type: .gallery, camera: .rear), maxDurationSeconds: 0) { _ in }
+    plugin.pickVideo(
+      source: SourceSpecification(type: .gallery, camera: .rear), maxDurationSeconds: 0
+    ) { _ in }
     XCTAssertEqual(plugin.callContext?.maxDuration, 0.0)
   }
 
   func testPickVideo_WithNegativeDuration_SetsCorrectContext() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-    plugin.pickVideo(source: SourceSpecification(type: .gallery, camera: .rear), maxDurationSeconds: -5) { _ in }
+    plugin.pickVideo(
+      source: SourceSpecification(type: .gallery, camera: .rear), maxDurationSeconds: -5
+    ) { _ in }
     XCTAssertEqual(plugin.callContext?.maxDuration, -5.0)
   }
 
   func testPickMultiImage_WithExtremeLimit_SetsCorrectContext() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-    plugin.pickMultiImage(maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false, limit: Int64.max) { _ in }
+    plugin.pickMultiImage(
+      maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false,
+      limit: Int64.max
+    ) { _ in }
     XCTAssertEqual(plugin.callContext?.maxItemCount, Int.max)
   }
 
   func testPickMultiImage_SetsCorrectContext() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-    plugin.pickMultiImage(maxSize: MaxSize(width: 100, height: 200), imageQuality: 50, requestFullMetadata: true, limit: 5) { _ in }
+    plugin.pickMultiImage(
+      maxSize: MaxSize(width: 100, height: 200), imageQuality: 50, requestFullMetadata: true,
+      limit: 5
+    ) { _ in }
 
     XCTAssertNotNil(plugin.callContext)
     XCTAssertEqual(plugin.callContext?.maxSize?.width, 100)
@@ -136,7 +152,10 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickMultiImage_NoLimit_SetsCorrectContext() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-    plugin.pickMultiImage(maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false, limit: nil) { _ in }
+    plugin.pickMultiImage(
+      maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false,
+      limit: nil
+    ) { _ in }
 
     XCTAssertNotNil(plugin.callContext)
     XCTAssertEqual(plugin.callContext?.maxItemCount, 0)
@@ -214,7 +233,10 @@ class ImagePickerPluginTests: XCTestCase {
       }
     }
 
-    plugin.pickImage(source: SourceSpecification(type: .gallery, camera: .rear), maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false) { _ in }
+    plugin.pickImage(
+      source: SourceSpecification(type: .gallery, camera: .rear),
+      maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false
+    ) { _ in }
 
     waitForExpectations(timeout: 1)
   }
@@ -223,11 +245,14 @@ class ImagePickerPluginTests: XCTestCase {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
     let expectation = self.expectation(description: "Error returned for multiple paths")
 
-    plugin.pickImage(source: SourceSpecification(type: .gallery, camera: .rear), maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false) { result in
-        if case .failure(let error as PigeonError) = result {
-            XCTAssertEqual(error.code, "invalid_result")
-            expectation.fulfill()
-        }
+    plugin.pickImage(
+      source: SourceSpecification(type: .gallery, camera: .rear),
+      maxSize: MaxSize(width: nil, height: nil), imageQuality: nil, requestFullMetadata: false
+    ) { result in
+      if case .failure(let error as PigeonError) = result {
+        XCTAssertEqual(error.code, "invalid_result")
+        expectation.fulfill()
+      }
     }
 
     plugin.sendCallResult(pathList: ["path1", "path2"])
@@ -244,7 +269,7 @@ class ImagePickerPluginTests: XCTestCase {
       (-1.0, 1.0),
       (101.0, 1.0),
       (-100.0, 1.0),
-      (1000.0, 1.0)
+      (1000.0, 1.0),
     ]
 
     for testCase in testCases {
@@ -265,7 +290,8 @@ class ImagePickerPluginTests: XCTestCase {
       expectation.fulfill()
     }
 
-    plugin.presentationControllerDidDismiss(UIPresentationController(presentedViewController: UIViewController(), presenting: nil))
+    plugin.presentationControllerDidDismiss(
+      UIPresentationController(presentedViewController: UIViewController(), presenting: nil))
 
     waitForExpectations(timeout: 1)
   }
@@ -276,7 +302,9 @@ class ImagePickerPluginTests: XCTestCase {
     let mockHandler = MockDeviceCapabilityHandler()
     mockHandler.cameraAuthorizationStatusResult = .notDetermined
     mockHandler.requestCameraAccessResult = true
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()), deviceCapabilityHandler: mockHandler)
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()),
+      deviceCapabilityHandler: mockHandler)
 
     plugin.callContext = ImagePickerMethodCallContext { _, _ in }
     plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
@@ -284,41 +312,37 @@ class ImagePickerPluginTests: XCTestCase {
     XCTAssertTrue(mockHandler.requestCameraAccessCalled)
   }
 
-    func testCheckCameraAuthorization_HandlesAllStatuses() {
-      let mockHandler = MockDeviceCapabilityHandler()
-      let viewProvider = StubViewProvider(viewController: UIViewController())
-      let plugin = ImagePickerPlugin(viewProvider: viewProvider, deviceCapabilityHandler: mockHandler)
+  func testCheckCameraAuthorization_HandlesAllStatuses() {
+    let mockHandler = MockDeviceCapabilityHandler()
+    let viewProvider = StubViewProvider(viewController: UIViewController())
+    let plugin = ImagePickerPlugin(viewProvider: viewProvider, deviceCapabilityHandler: mockHandler)
 
-      // Test Authorized
-//      mockHandler.cameraAuthorizationStatusResult = .authorized
-//      plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
-
-      // Test Denied
-      mockHandler.cameraAuthorizationStatusResult = .denied
-      let expectationDenied = self.expectation(description: "Denied error")
-      plugin.callContext = ImagePickerMethodCallContext { _, error in
-        XCTAssertEqual((error as? PigeonError)?.code, "camera_access_denied")
-        expectationDenied.fulfill()
-      }
-      plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
-
-      // Test Restricted
-      mockHandler.cameraAuthorizationStatusResult = .restricted
-      let expectationRestricted = self.expectation(description: "Restricted error")
-      plugin.callContext = ImagePickerMethodCallContext { _, error in
-        XCTAssertEqual((error as? PigeonError)?.code, "camera_access_restricted")
-        expectationRestricted.fulfill()
-      }
-      plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
-
-      waitForExpectations(timeout: 1)
+    // Test Denied
+    mockHandler.cameraAuthorizationStatusResult = .denied
+    let expectationDenied = self.expectation(description: "Denied error")
+    plugin.callContext = ImagePickerMethodCallContext { _, error in
+      XCTAssertEqual((error as? PigeonError)?.code, "camera_access_denied")
+      expectationDenied.fulfill()
     }
+    plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
 
+    // Test Restricted
+    mockHandler.cameraAuthorizationStatusResult = .restricted
+    let expectationRestricted = self.expectation(description: "Restricted error")
+    plugin.callContext = ImagePickerMethodCallContext { _, error in
+      XCTAssertEqual((error as? PigeonError)?.code, "camera_access_restricted")
+      expectationRestricted.fulfill()
+    }
+    plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
+
+    waitForExpectations(timeout: 1)
+  }
 
   func testCheckPhotoAuthorization_Denied_ReturnsError() {
     let mockHandler = MockDeviceCapabilityHandler()
     mockHandler.photoLibraryAuthorizationStatusResult = .denied
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(), deviceCapabilityHandler: mockHandler)
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(), deviceCapabilityHandler: mockHandler)
 
     let expectation = self.expectation(description: "Denied error")
     plugin.callContext = ImagePickerMethodCallContext { _, error in
@@ -334,7 +358,9 @@ class ImagePickerPluginTests: XCTestCase {
     let mockHandler = MockDeviceCapabilityHandler()
     mockHandler.photoLibraryAuthorizationStatusResult = .notDetermined
     mockHandler.requestPhotoLibraryAuthorizationStatusResult = .authorized
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()), deviceCapabilityHandler: mockHandler)
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()),
+      deviceCapabilityHandler: mockHandler)
 
     plugin.callContext = ImagePickerMethodCallContext { _, _ in }
     plugin.checkPhotoAuthorization(with: UIViewController())
@@ -371,11 +397,11 @@ class ImagePickerPluginTests: XCTestCase {
     plugin.checkPhotoAuthorization(with: UIViewController())
 
     // Test Limited
-      if #available(iOS 14, *) {
-          mockHandler.photoLibraryAuthorizationStatusResult = .limited
-      } else {
-          // Fallback on earlier versions
-      }
+    if #available(iOS 14, *) {
+      mockHandler.photoLibraryAuthorizationStatusResult = .limited
+    } else {
+      // Fallback on earlier versions
+    }
     plugin.checkPhotoAuthorization(with: UIViewController())
     // Success - picker would be presented
 
@@ -386,8 +412,8 @@ class ImagePickerPluginTests: XCTestCase {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
     let expectation = self.expectation(description: "Restricted error")
     plugin.callContext = ImagePickerMethodCallContext { _, error in
-        XCTAssertEqual((error as? PigeonError)?.code, "camera_access_restricted")
-        expectation.fulfill()
+      XCTAssertEqual((error as? PigeonError)?.code, "camera_access_restricted")
+      expectation.fulfill()
     }
     plugin.errorNoCameraAccess(.restricted)
     waitForExpectations(timeout: 1)
@@ -395,7 +421,7 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testShowCamera_WhenCameraNotAvailable_ShowsError() {
     let mockHandler = MockDeviceCapabilityHandler()
-    mockHandler.isSourceTypeAvailableResult = false // Camera unavailable
+    mockHandler.isSourceTypeAvailableResult = false  // Camera unavailable
     let viewProvider = StubViewProvider(viewController: UIViewController())
     let plugin = ImagePickerPlugin(viewProvider: viewProvider, deviceCapabilityHandler: mockHandler)
 
@@ -411,7 +437,8 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testLaunchPHPicker_SetsCorrectConfiguration() {
     if #available(iOS 14, *) {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController()))
       let context = ImagePickerMethodCallContext { _, _ in }
       context.includeImages = true
       context.includeVideo = true
@@ -426,7 +453,8 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testLaunchPHPicker_WithNoTypes_DoesNotCrash() {
     if #available(iOS 14, *) {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController()))
       let context = ImagePickerMethodCallContext { _, _ in }
       // includeImages and includeVideo are false by default
 
@@ -437,7 +465,8 @@ class ImagePickerPluginTests: XCTestCase {
   }
 
   func testLaunchUIImagePicker_WithVideo_SetsConfiguration() {
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     let context = ImagePickerMethodCallContext { _, _ in }
     context.includeVideo = true
     context.maxDuration = 60.0
@@ -445,38 +474,41 @@ class ImagePickerPluginTests: XCTestCase {
     let mockPicker = MockUIImagePickerController()
     plugin.setImagePickerControllerOverrides([mockPicker])
 
-    plugin.launchUIImagePicker(with: SourceSpecification(type: .gallery, camera: .rear), context: context)
+    plugin.launchUIImagePicker(
+      with: SourceSpecification(type: .gallery, camera: .rear), context: context)
 
     XCTAssertEqual(mockPicker.videoMaximumDuration, 60.0)
     XCTAssertEqual(mockPicker.videoQuality, .typeHigh)
   }
 
-    func testLaunchUIImagePicker_WithImages_SetsConfiguration() {
-      let plugin = ImagePickerPlugin(
-        viewProvider: StubViewProvider(viewController: UIViewController())
-      )
-      let context = ImagePickerMethodCallContext { _, _ in }
-      context.includeImages = true
+  func testLaunchUIImagePicker_WithImages_SetsConfiguration() {
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController())
+    )
+    let context = ImagePickerMethodCallContext { _, _ in }
+    context.includeImages = true
 
-      let mockPicker = MockUIImagePickerController()
-      plugin.setImagePickerControllerOverrides([mockPicker])
+    let mockPicker = MockUIImagePickerController()
+    plugin.setImagePickerControllerOverrides([mockPicker])
 
-      plugin.launchUIImagePicker(
-        with: SourceSpecification(type: .gallery, camera: .rear),
-        context: context
-      )
+    plugin.launchUIImagePicker(
+      with: SourceSpecification(type: .gallery, camera: .rear),
+      context: context
+    )
 
-        if #available(iOS 14.0, *) {
-            XCTAssertTrue(mockPicker.mediaTypes.contains(UTType.image.identifier))
-        } else {
-            // Fallback on earlier versions
-        }
+    if #available(iOS 14.0, *) {
+      XCTAssertTrue(mockPicker.mediaTypes.contains(UTType.image.identifier))
+    } else {
+      // Fallback on earlier versions
     }
+  }
 
   func testShowCamera_WhenSourceTypeUnavailable_ShowsError() {
     let mockHandler = MockDeviceCapabilityHandler()
     mockHandler.isSourceTypeAvailableResult = false
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()), deviceCapabilityHandler: mockHandler)
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()),
+      deviceCapabilityHandler: mockHandler)
 
     let expectation = self.expectation(description: "Error returned")
     plugin.callContext = ImagePickerMethodCallContext { paths, error in
@@ -500,7 +532,8 @@ class ImagePickerPluginTests: XCTestCase {
     }
 
     let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
-    plugin.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: [.originalImage: image])
+    plugin.imagePickerController(
+      UIImagePickerController(), didFinishPickingMediaWithInfo: [.originalImage: image])
 
     waitForExpectations(timeout: 1)
   }
@@ -517,7 +550,8 @@ class ImagePickerPluginTests: XCTestCase {
     plugin.callContext = context
 
     let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
-    plugin.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: [.originalImage: image])
+    plugin.imagePickerController(
+      UIImagePickerController(), didFinishPickingMediaWithInfo: [.originalImage: image])
 
     waitForExpectations(timeout: 1)
   }
@@ -532,7 +566,8 @@ class ImagePickerPluginTests: XCTestCase {
     }
 
     let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
-    plugin.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: [.editedImage: image])
+    plugin.imagePickerController(
+      UIImagePickerController(), didFinishPickingMediaWithInfo: [.editedImage: image])
 
     waitForExpectations(timeout: 1)
   }
@@ -551,7 +586,8 @@ class ImagePickerPluginTests: XCTestCase {
     let videoURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test.mp4")
     try? "test".data(using: .utf8)?.write(to: videoURL)
 
-    plugin.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: [.mediaURL: videoURL])
+    plugin.imagePickerController(
+      UIImagePickerController(), didFinishPickingMediaWithInfo: [.mediaURL: videoURL])
 
     waitForExpectations(timeout: 1)
     try? FileManager.default.removeItem(at: videoURL)
@@ -581,7 +617,8 @@ class ImagePickerPluginTests: XCTestCase {
         expectation.fulfill()
       }
 
-      plugin.picker(PHPickerViewController(configuration: PHPickerConfiguration()), didFinishPicking: [])
+      plugin.picker(
+        PHPickerViewController(configuration: PHPickerConfiguration()), didFinishPicking: [])
 
       waitForExpectations(timeout: 1)
     }
@@ -590,7 +627,8 @@ class ImagePickerPluginTests: XCTestCase {
   // MARK: - Interaction Blocker Tests
 
   func testRemoveInteractionBlocker_ResetsKeyWindow() {
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     let window = UIWindow()
     plugin.interactionBlockerWindow = window
     plugin.previousKeyWindow = UIWindow()
@@ -641,7 +679,8 @@ class ImagePickerPluginTests: XCTestCase {
   }
 
   func testPickVideo_FromGallery_SetsCorrectContext() {
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
 
     plugin.pickVideo(
       source: SourceSpecification(type: .gallery, camera: .rear), maxDurationSeconds: 20
@@ -677,7 +716,8 @@ class ImagePickerPluginTests: XCTestCase {
   }
 
   func testPickMultiVideo_FromGallery_SetsCorrectContext() {
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
 
     plugin.pickMultiVideo(maxDurationSeconds: 45, limit: 2) { _ in }
 
@@ -689,7 +729,8 @@ class ImagePickerPluginTests: XCTestCase {
   }
 
   func testPickMedia_FromGallery_SetsCorrectContext() {
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     let options = MediaSelectionOptions(
       maxSize: MaxSize(width: 50, height: 50),
       imageQuality: 90,
@@ -731,26 +772,33 @@ class ImagePickerPluginTests: XCTestCase {
   }
 
   func testPickImage_FromGallery_LaunchUIImagePickerOnOldOS() {
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     let context = ImagePickerMethodCallContext { _, _ in }
     context.includeImages = true
     plugin.setImagePickerControllerOverrides([MockUIImagePickerController()])
 
-    plugin.pickImage(source: SourceSpecification(type: .gallery, camera: .rear), maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false) { _ in }
+    plugin.pickImage(
+      source: SourceSpecification(type: .gallery, camera: .rear), maxSize: MaxSize(),
+      imageQuality: nil, requestFullMetadata: false
+    ) { _ in }
     XCTAssertNotNil(plugin.callContext)
   }
 
   func testPickMultiImage_LaunchUIImagePickerOnOldOS() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
-      plugin.setImagePickerControllerOverrides([MockUIImagePickerController()])
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
+    plugin.setImagePickerControllerOverrides([MockUIImagePickerController()])
 
-      plugin.pickMultiImage(maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false, limit: 1) { _ in }
-      XCTAssertNotNil(plugin.callContext)
+    plugin.pickMultiImage(
+      maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false, limit: 1
+    ) { _ in }
+    XCTAssertNotNil(plugin.callContext)
   }
 
   func testShowCamera_WhenAlreadyPresenting_DoesNothing() {
-      _ = MockDeviceCapabilityHandler()
-      _ = UIImagePickerController()
+    _ = MockDeviceCapabilityHandler()
+    _ = UIImagePickerController()
     // We can't easily set isBeingPresented, but we can mock the behavior if we had a way to override it.
     // Since we don't, we'll just hit the line if we can.
   }
@@ -759,8 +807,8 @@ class ImagePickerPluginTests: XCTestCase {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
     let expectation = self.expectation(description: "Denied error")
     plugin.callContext = ImagePickerMethodCallContext { _, error in
-        XCTAssertEqual((error as? PigeonError)?.code, "photo_access_denied")
-        expectation.fulfill()
+      XCTAssertEqual((error as? PigeonError)?.code, "photo_access_denied")
+      expectation.fulfill()
     }
     plugin.errorNoPhotoAccess(.denied)
     waitForExpectations(timeout: 1)
@@ -770,8 +818,8 @@ class ImagePickerPluginTests: XCTestCase {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
     let expectation = self.expectation(description: "Restricted error")
     plugin.callContext = ImagePickerMethodCallContext { _, error in
-        XCTAssertEqual((error as? PigeonError)?.code, "photo_access_restricted")
-        expectation.fulfill()
+      XCTAssertEqual((error as? PigeonError)?.code, "photo_access_restricted")
+      expectation.fulfill()
     }
     plugin.errorNoPhotoAccess(.restricted)
     waitForExpectations(timeout: 1)
@@ -781,7 +829,9 @@ class ImagePickerPluginTests: XCTestCase {
     let mockHandler = MockDeviceCapabilityHandler()
     mockHandler.photoLibraryAuthorizationStatusResult = .notDetermined
     mockHandler.requestPhotoLibraryAuthorizationStatusResult = .denied
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()), deviceCapabilityHandler: mockHandler)
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()),
+      deviceCapabilityHandler: mockHandler)
 
     let expectation = self.expectation(description: "Denied error")
     plugin.callContext = ImagePickerMethodCallContext { _, error in
@@ -804,7 +854,8 @@ class ImagePickerPluginTests: XCTestCase {
     }
 
     let invalidVideoURL = URL(fileURLWithPath: "/invalid/path/video.mp4")
-    plugin.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: [.mediaURL: invalidVideoURL])
+    plugin.imagePickerController(
+      UIImagePickerController(), didFinishPickingMediaWithInfo: [.mediaURL: invalidVideoURL])
 
     waitForExpectations(timeout: 1)
   }
@@ -850,134 +901,133 @@ class ImagePickerPluginTests: XCTestCase {
     }
   }
 
-    func testImagePickerDelegate_WithoutCallContext_ReturnsEarly() {
+  func testImagePickerDelegate_WithoutCallContext_ReturnsEarly() {
 
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-        let picker = UIImagePickerController()
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let picker = UIImagePickerController()
 
-        // ✅ Ensure callContext is nil
-        plugin.callContext = nil
-        XCTAssertNil(plugin.callContext)
+    // Ensure callContext is nil
+    plugin.callContext = nil
+    XCTAssertNil(plugin.callContext)
 
-        // ✅ Case 1: Image input
-        plugin.imagePickerController(
-            picker,
-            didFinishPickingMediaWithInfo: [.originalImage: UIImage()]
-        )
+    // Case 1: Image input
+    plugin.imagePickerController(
+      picker,
+      didFinishPickingMediaWithInfo: [.originalImage: UIImage()]
+    )
 
-        // ✅ Ensure still no context (early return path)
-        XCTAssertNil(plugin.callContext)
+    // Ensure still no context (early return path)
+    XCTAssertNil(plugin.callContext)
 
-        // ✅ Case 2: Empty info dictionary
-        plugin.imagePickerController(
-            picker,
-            didFinishPickingMediaWithInfo: [:]
-        )
+    // Case 2: Empty info dictionary
+    plugin.imagePickerController(
+      picker,
+      didFinishPickingMediaWithInfo: [:]
+    )
 
-        XCTAssertNil(plugin.callContext)
+    XCTAssertNil(plugin.callContext)
 
-        // ✅ Case 3: Video-like info (forces different branch attempt)
-        let url = URL(fileURLWithPath: "/tmp/video.mov")
-        plugin.imagePickerController(
-            picker,
-            didFinishPickingMediaWithInfo: [.mediaURL: url]
-        )
+    // Case 3: Video-like info (forces different branch attempt)
+    let url = URL(fileURLWithPath: "/tmp/video.mov")
+    plugin.imagePickerController(
+      picker,
+      didFinishPickingMediaWithInfo: [.mediaURL: url]
+    )
 
-        XCTAssertNil(plugin.callContext)
+    XCTAssertNil(plugin.callContext)
 
-        // ✅ Case 4: Mixed info data
-        plugin.imagePickerController(
-            picker,
-            didFinishPickingMediaWithInfo: [
-                .originalImage: UIImage(),
-                .mediaURL: url
-            ]
-        )
+    // Case 4: Mixed info data
+    plugin.imagePickerController(
+      picker,
+      didFinishPickingMediaWithInfo: [
+        .originalImage: UIImage(),
+        .mediaURL: url,
+      ]
+    )
 
-        XCTAssertNil(plugin.callContext)
+    XCTAssertNil(plugin.callContext)
 
-        // ✅ Case 5: Repeated execution (forces coverage tracking)
-        plugin.imagePickerController(
-            picker,
-            didFinishPickingMediaWithInfo: [.originalImage: UIImage()]
-        )
+    // Case 5: Repeated execution (forces coverage tracking)
+    plugin.imagePickerController(
+      picker,
+      didFinishPickingMediaWithInfo: [.originalImage: UIImage()]
+    )
 
-        XCTAssertNil(plugin.callContext)
+    XCTAssertNil(plugin.callContext)
+  }
+
+  func testPickMultiImage_WithNegativeLimit_DoesNotCrash() {
+    if #available(iOS 14, *) {
+
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController())
+      )
+
+      let defaultSize = MaxSize(width: nil, height: nil)
+
+      // Case 1: Negative limit (original case)
+      plugin.pickMultiImage(
+        maxSize: defaultSize,
+        imageQuality: nil,
+        requestFullMetadata: false,
+        limit: -1
+      ) { _ in }
+
+      XCTAssertEqual(plugin.callContext?.maxItemCount, -1)
+
+      // Case 2: Zero limit (edge case)
+      plugin.pickMultiImage(
+        maxSize: defaultSize,
+        imageQuality: nil,
+        requestFullMetadata: false,
+        limit: 0
+      ) { _ in }
+
+      XCTAssertEqual(plugin.callContext?.maxItemCount, 0)
+
+      // Case 3: Positive limit
+      plugin.pickMultiImage(
+        maxSize: defaultSize,
+        imageQuality: nil,
+        requestFullMetadata: false,
+        limit: 5
+      ) { _ in }
+
+      XCTAssertEqual(plugin.callContext?.maxItemCount, 5)
+
+      // Case 4: With imageQuality and metadata
+      plugin.pickMultiImage(
+        maxSize: defaultSize,
+        imageQuality: 75,
+        requestFullMetadata: true,
+        limit: 3
+      ) { _ in }
+
+      XCTAssertEqual(plugin.callContext?.maxItemCount, 3)
+
+      // Case 5: Custom maxSize (forces additional branch)
+      let customSize = MaxSize(width: 100, height: 100)
+
+      plugin.pickMultiImage(
+        maxSize: customSize,
+        imageQuality: 50,
+        requestFullMetadata: false,
+        limit: 2
+      ) { _ in }
+
+      XCTAssertEqual(plugin.callContext?.maxItemCount, 2)
+
+      // Case 6: Repeated call (ensures coverage tracking)
+      plugin.pickMultiImage(
+        maxSize: defaultSize,
+        imageQuality: 1,
+        requestFullMetadata: false,
+        limit: 1
+      ) { _ in }
+
+      XCTAssertEqual(plugin.callContext?.maxItemCount, 1)
     }
-
-
-    func testPickMultiImage_WithNegativeLimit_DoesNotCrash() {
-        if #available(iOS 14, *) {
-
-            let plugin = ImagePickerPlugin(
-                viewProvider: StubViewProvider(viewController: UIViewController())
-            )
-
-            let defaultSize = MaxSize(width: nil, height: nil)
-
-            // ✅ Case 1: Negative limit (original case)
-            plugin.pickMultiImage(
-                maxSize: defaultSize,
-                imageQuality: nil,
-                requestFullMetadata: false,
-                limit: -1
-            ) { _ in }
-
-            XCTAssertEqual(plugin.callContext?.maxItemCount, -1)
-
-            // ✅ Case 2: Zero limit (edge case)
-            plugin.pickMultiImage(
-                maxSize: defaultSize,
-                imageQuality: nil,
-                requestFullMetadata: false,
-                limit: 0
-            ) { _ in }
-
-            XCTAssertEqual(plugin.callContext?.maxItemCount, 0)
-
-            // ✅ Case 3: Positive limit
-            plugin.pickMultiImage(
-                maxSize: defaultSize,
-                imageQuality: nil,
-                requestFullMetadata: false,
-                limit: 5
-            ) { _ in }
-
-            XCTAssertEqual(plugin.callContext?.maxItemCount, 5)
-
-            // ✅ Case 4: With imageQuality and metadata
-            plugin.pickMultiImage(
-                maxSize: defaultSize,
-                imageQuality: 75,
-                requestFullMetadata: true,
-                limit: 3
-            ) { _ in }
-
-            XCTAssertEqual(plugin.callContext?.maxItemCount, 3)
-
-            // ✅ Case 5: Custom maxSize (forces additional branch)
-            let customSize = MaxSize(width: 100, height: 100)
-
-            plugin.pickMultiImage(
-                maxSize: customSize,
-                imageQuality: 50,
-                requestFullMetadata: false,
-                limit: 2
-            ) { _ in }
-
-            XCTAssertEqual(plugin.callContext?.maxItemCount, 2)
-
-            // ✅ Case 6: Repeated call (ensures coverage tracking)
-            plugin.pickMultiImage(
-                maxSize: defaultSize,
-                imageQuality: 1,
-                requestFullMetadata: false,
-                limit: 1
-            ) { _ in }
-
-            XCTAssertEqual(plugin.callContext?.maxItemCount, 1)
-        }
-    }
+  }
 
   func testGetDesiredImageQuality_Boundaries() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
@@ -1021,32 +1071,6 @@ class ImagePickerPluginTests: XCTestCase {
     plugin.removeInteractionBlocker()
   }
 
-//  func testPresentingViewController_WhenNoViewController_ReturnsNil() {
-//    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: nil))
-//    // It should return the nil from viewProvider.viewController! (which would crash if not careful)
-//    // Wait, let's look at the implementation:
-//    /*
-//    guard let topController = viewProvider.viewController,
-//      let presentingWindow = topController.view.window
-//    else {
-//      return viewProvider.viewController!
-//    }
-//    */
-//    // If viewProvider.viewController is nil, it returns nil.
-//    XCTAssertNil(plugin.presentingViewControllerForImagePickerInNewWindow())
-//  }
-
-//  func testShowCamera_WhenAlreadyPresenting_ReturnsEarly() {
-//    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-//    let mockPicker = MockUIImagePickerController()
-//    mockPicker.mockIsBeingPresented = true
-//
-//    plugin.showCamera(.rear, with: mockPicker)
-//
-//    // Should not call isSourceTypeAvailable
-//    XCTAssertFalse((plugin.deviceCapabilityHandler as! MockDeviceCapabilityHandler).isSourceTypeAvailableCalled)
-//  }
-
   func testImagePickerDelegate_DidFinishPickingImage_RequestFullMetadata_NoAsset() {
     let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
     let expectation = self.expectation(description: "Result returned")
@@ -1059,14 +1083,16 @@ class ImagePickerPluginTests: XCTestCase {
     plugin.callContext = context
 
     let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
-    plugin.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: [.originalImage: image])
+    plugin.imagePickerController(
+      UIImagePickerController(), didFinishPickingMediaWithInfo: [.originalImage: image])
 
     waitForExpectations(timeout: 1)
   }
 
   func testLaunchPHPicker_WithSelectionLimit_Zero() {
     if #available(iOS 14, *) {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController()))
       let context = ImagePickerMethodCallContext { _, _ in }
       context.maxItemCount = 0
 
@@ -1083,21 +1109,6 @@ class ImagePickerPluginTests: XCTestCase {
     XCTAssertEqual(result, vc)
   }
 
-//  func testLaunchUIImagePicker_WithGallery_RequestFullMetadata() {
-//    let mockHandler = MockDeviceCapabilityHandler()
-//    mockHandler.photoLibraryAuthorizationStatusResult = .authorized
-//    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()), deviceCapabilityHandler: mockHandler)
-//    let context = ImagePickerMethodCallContext { _, _ in }
-//    context.requestFullMetadata = true
-//
-//    let mockPicker = MockUIImagePickerController()
-//    plugin.setImagePickerControllerOverrides([mockPicker])
-//
-//    plugin.launchUIImagePicker(with: SourceSpecification(type: .gallery, camera: .rear), context: context)
-//
-//    XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
-//  }
-
   func testPickImageMessageHandler_Success() {
     let messenger = TestBinaryMessenger()
     let viewProvider = StubViewProvider(viewController: UIViewController())
@@ -1112,7 +1123,7 @@ class ImagePickerPluginTests: XCTestCase {
       SourceSpecification(type: .gallery, camera: .rear),
       MaxSize(width: 100, height: 100),
       Int64(80),
-      true
+      true,
     ]
     let message = MessagesPigeonCodec.shared.encode(args)
 
@@ -1129,7 +1140,8 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickMultiImageMessageHandler_Success() {
     let messenger = TestBinaryMessenger()
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
     let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiImage"
@@ -1151,7 +1163,8 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickMultiImageMessageHandler_NilLimit_Success() {
     let messenger = TestBinaryMessenger()
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
     let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiImage"
@@ -1172,7 +1185,8 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickVideoMessageHandler_Success() {
     let messenger = TestBinaryMessenger()
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
     let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickVideo"
@@ -1194,7 +1208,8 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickMultiVideoMessageHandler_Success() {
     let messenger = TestBinaryMessenger()
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
     let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiVideo"
@@ -1216,7 +1231,8 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickMultiVideoMessageHandler_NoLimit_Success() {
     let messenger = TestBinaryMessenger()
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
     let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiVideo"
@@ -1237,13 +1253,16 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickMediaMessageHandler_Success() {
     let messenger = TestBinaryMessenger()
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
     let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMedia"
     let handler = messenger.handlers[channelName]
 
-    let options = MediaSelectionOptions(maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false, allowMultiple: true, limit: nil)
+    let options = MediaSelectionOptions(
+      maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false, allowMultiple: true,
+      limit: nil)
     let args: [Any?] = [options]
     let message = MessagesPigeonCodec.shared.encode(args)
 
@@ -1260,13 +1279,16 @@ class ImagePickerPluginTests: XCTestCase {
 
   func testPickMediaMessageHandler_Single_Success() {
     let messenger = TestBinaryMessenger()
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()))
     ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
     let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMedia"
     let handler = messenger.handlers[channelName]
 
-    let options = MediaSelectionOptions(maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false, allowMultiple: false, limit: nil)
+    let options = MediaSelectionOptions(
+      maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false, allowMultiple: false,
+      limit: nil)
     let args: [Any?] = [options]
     let message = MessagesPigeonCodec.shared.encode(args)
 
@@ -1299,67 +1321,68 @@ class ImagePickerPluginTests: XCTestCase {
       expectation.fulfill()
     }
 
-    plugin.sendCallResult(error: PigeonError(code: "test_code", message: "test_message", details: nil))
+    plugin.sendCallResult(
+      error: PigeonError(code: "test_code", message: "test_message", details: nil))
     waitForExpectations(timeout: 1)
   }
 
-    func testMessageHandler_Failure_FlutterError() {
-      let messenger = TestBinaryMessenger()
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+  func testMessageHandler_Failure_FlutterError() {
+    let messenger = TestBinaryMessenger()
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
 
-      ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
+    ImagePickerApiSetup.setUp(binaryMessenger: messenger, api: plugin)
 
-      let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickImage"
-      guard let handler = messenger.handlers[channelName] else {
-        XCTFail("Handler not registered")
-        return
-      }
-
-      let args: [Any?] = [
-        SourceSpecification(type: .gallery, camera: .rear),
-        MaxSize(),
-        nil,
-        false
-      ]
-
-      let message = MessagesPigeonCodec.shared.encode(args)
-
-      var receivedReply: [Any?]?
-
-      // ✅ Call handler FIRST (this registers the reply with the plugin)
-      handler(message) { reply in
-        guard let reply = reply else {
-          XCTFail("Reply was nil")
-          return
-        }
-        receivedReply = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
-      }
-
-      // ✅ NOW send the error (reply callback exists)
-      plugin.sendCallResult(
-        error: FlutterError(
-          code: "flutter_code",
-          message: "flutter_message",
-          details: nil
-        ) as? Error
-      )
-
-      // ✅ Assert synchronously
-      guard let decoded = receivedReply else {
-        XCTFail("No reply received")
-        return
-      }
-
-        // ✅ Ignore initial empty / success response
-                guard decoded.count == 3 else {
-                  return
-                }
-
-      XCTAssertEqual(decoded.count, 3)
-      XCTAssertEqual(decoded[0] as? String, "flutter_code")
-      XCTAssertEqual(decoded[1] as? String, "flutter_message")
-      XCTAssertNil(decoded[2])
+    let channelName = "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickImage"
+    guard let handler = messenger.handlers[channelName] else {
+      XCTFail("Handler not registered")
+      return
     }
+
+    let args: [Any?] = [
+      SourceSpecification(type: .gallery, camera: .rear),
+      MaxSize(),
+      nil,
+      false,
+    ]
+
+    let message = MessagesPigeonCodec.shared.encode(args)
+
+    var receivedReply: [Any?]?
+
+    // Call handler FIRST (this registers the reply with the plugin)
+    handler(message) { reply in
+      guard let reply = reply else {
+        XCTFail("Reply was nil")
+        return
+      }
+      receivedReply = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+    }
+
+    // NOW send the error (reply callback exists)
+    plugin.sendCallResult(
+      error: FlutterError(
+        code: "flutter_code",
+        message: "flutter_message",
+        details: nil
+      ) as? Error
+    )
+
+    // Assert synchronously
+    guard let decoded = receivedReply else {
+      XCTFail("No reply received")
+      return
+    }
+
+    // Ignore initial empty / success response
+    guard decoded.count == 3 else {
+      return
+    }
+
+    XCTAssertEqual(decoded.count, 3)
+    XCTAssertEqual(decoded[0] as? String, "flutter_code")
+    XCTAssertEqual(decoded[1] as? String, "flutter_message")
+    XCTAssertNil(decoded[2])
+  }
 
   func testMessageHandler_Failure_GenericError() {
     let messenger = TestBinaryMessenger()
@@ -1385,304 +1408,310 @@ class ImagePickerPluginTests: XCTestCase {
   }
 
   func testPickImage_InvalidResult_Error() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-      let expectation = self.expectation(description: "Invalid result error")
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let expectation = self.expectation(description: "Invalid result error")
 
-      plugin.pickImage(source: SourceSpecification(type: .gallery, camera: .rear), maxSize: MaxSize(), imageQuality: nil, requestFullMetadata: false) { result in
-          if case .failure(let error) = result {
-              XCTAssertEqual((error as? PigeonError)?.code, "invalid_result")
-              expectation.fulfill()
-          }
+    plugin.pickImage(
+      source: SourceSpecification(type: .gallery, camera: .rear), maxSize: MaxSize(),
+      imageQuality: nil, requestFullMetadata: false
+    ) { result in
+      if case .failure(let error) = result {
+        XCTAssertEqual((error as? PigeonError)?.code, "invalid_result")
+        expectation.fulfill()
       }
+    }
 
-      plugin.sendCallResult(pathList: ["p1", "path2"])
-      waitForExpectations(timeout: 1)
+    plugin.sendCallResult(pathList: ["p1", "path2"])
+    waitForExpectations(timeout: 1)
   }
 
   func testPickVideo_InvalidResult_Error() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-      let expectation = self.expectation(description: "Invalid result error video")
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let expectation = self.expectation(description: "Invalid result error video")
 
-      plugin.pickVideo(source: SourceSpecification(type: .gallery, camera: .rear), maxDurationSeconds: nil) { result in
-          if case .failure(let error) = result {
-              XCTAssertEqual((error as? PigeonError)?.code, "invalid_result")
-              expectation.fulfill()
-          }
+    plugin.pickVideo(
+      source: SourceSpecification(type: .gallery, camera: .rear), maxDurationSeconds: nil
+    ) { result in
+      if case .failure(let error) = result {
+        XCTAssertEqual((error as? PigeonError)?.code, "invalid_result")
+        expectation.fulfill()
       }
+    }
 
-      plugin.sendCallResult(pathList: ["v1", "v2"])
-      waitForExpectations(timeout: 1)
+    plugin.sendCallResult(pathList: ["v1", "v2"])
+    waitForExpectations(timeout: 1)
   }
 
-    func testDeviceCapabilityHandler_RequestAccess() {
-        let handler = MockDeviceCapabilityHandler()
+  func testDeviceCapabilityHandler_RequestAccess() {
+    let handler = MockDeviceCapabilityHandler()
 
-        let expectationCamera = expectation(description: "Camera access")
-        let expectationPhoto = expectation(description: "Photo access")
+    let expectationCamera = expectation(description: "Camera access")
+    let expectationPhoto = expectation(description: "Photo access")
 
-        handler.requestCameraAccess { granted in
-            XCTAssertTrue(granted)
-            expectationCamera.fulfill()
-        }
-
-        handler.requestPhotoLibraryAuthorization { status in
-            XCTAssertEqual(status, .authorized) // ✅ FIX HERE
-            expectationPhoto.fulfill()
-        }
-
-        waitForExpectations(timeout: 1.0)
-    }
-    
-
-    // MARK: - Additional Coverage Tests (Safe Additions)
-
-    func testSendCallResult_WithNilContext_DoesNothing() {
-
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-
-        // ✅ Case 1: Nil context (main scenario)
-        plugin.callContext = nil
-
-        // Should not crash
-        plugin.sendCallResult(pathList: ["test"])
-
-        // ✅ Validate state remains unchanged
-        XCTAssertNil(plugin.callContext)
-
-        // ✅ Case 2: Empty list with nil context
-        plugin.sendCallResult(pathList: [])
-        XCTAssertNil(plugin.callContext)
-
-        // ✅ Case 3: Multiple paths with nil context
-        plugin.sendCallResult(pathList: ["one.jpg", "two.jpg"])
-        XCTAssertNil(plugin.callContext)
-
-        // ✅ Case 4: Repeated execution (forces coverage tracking)
-        plugin.sendCallResult(pathList: ["repeat"])
-        XCTAssertNil(plugin.callContext)
-    }
-    
-
-    func testSendCallResult_WithEmptyPaths_ReturnsEmptyArray() {
-
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-
-        // ✅ Case 1: Empty paths (your original case)
-        do {
-            let expectation = expectation(description: "Empty result")
-
-            plugin.callContext = ImagePickerMethodCallContext { paths, error in
-                XCTAssertEqual(paths?.count ?? 0, 0)
-                XCTAssertNil(error)
-                expectation.fulfill()
-            }
-
-            plugin.sendCallResult(pathList: [])
-            waitForExpectations(timeout: 1)
-        }
-
-        // ✅ Case 2: Non-empty paths (forces mapping branch)
-        do {
-            let expectation = expectation(description: "Non-empty result")
-
-            let testPaths = ["path1.jpg", "path2.jpg"]
-
-            plugin.callContext = ImagePickerMethodCallContext { paths, error in
-                XCTAssertEqual(paths?.count, 2)
-                XCTAssertEqual(paths, testPaths)
-                XCTAssertNil(error)
-                expectation.fulfill()
-            }
-
-            plugin.sendCallResult(pathList: testPaths)
-            waitForExpectations(timeout: 1)
-        }
-
-        // ✅ Case 3: Single path (edge case)
-        do {
-            let expectation = expectation(description: "Single result")
-
-            let singlePath = ["single.jpg"]
-
-            plugin.callContext = ImagePickerMethodCallContext { paths, error in
-                XCTAssertEqual(paths?.count, 1)
-                XCTAssertEqual(paths?.first, "single.jpg")
-                expectation.fulfill()
-            }
-
-            plugin.sendCallResult(pathList: singlePath)
-            waitForExpectations(timeout: 1)
-        }
-
-        // ✅ Case 4: Repeated call (ensures coverage tracking)
-        plugin.callContext = ImagePickerMethodCallContext { _, _ in }
-        plugin.sendCallResult(pathList: [])
+    handler.requestCameraAccess { granted in
+      XCTAssertTrue(granted)
+      expectationCamera.fulfill()
     }
 
-    func testCameraDevice_DefaultFallback() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-
-      let source = SourceSpecification(type: .gallery, camera: .rear)
-      XCTAssertEqual(plugin.cameraDevice(for: source), .rear)
+    handler.requestPhotoLibraryAuthorization { status in
+      XCTAssertEqual(status, .authorized)
+      expectationPhoto.fulfill()
     }
 
-    func testRemoveInteractionBlocker_WhenNil_DoesNotCrash() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    waitForExpectations(timeout: 1.0)
+  }
 
-      plugin.interactionBlockerWindow = nil
-      plugin.previousKeyWindow = nil
+  // MARK: - Additional Coverage Tests (Safe Additions)
 
-      plugin.removeInteractionBlocker()
-      XCTAssertNil(plugin.interactionBlockerWindow)
-    }
+  func testSendCallResult_WithNilContext_DoesNothing() {
 
-    func testShowCamera_WhenDeviceNotAvailable_ReturnsNil() {
-      let mockHandler = MockDeviceCapabilityHandler()
-      mockHandler.isCameraDeviceAvailableResult = false
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
 
-      let plugin = ImagePickerPlugin(
-        viewProvider: StubViewProvider(viewController: UIViewController()),
-        deviceCapabilityHandler: mockHandler
-      )
+    // Case 1: Nil context (main scenario)
+    plugin.callContext = nil
 
-      let expectation = self.expectation(description: "No camera device")
+    // Should not crash
+    plugin.sendCallResult(pathList: ["test"])
+
+    // Validate state remains unchanged
+    XCTAssertNil(plugin.callContext)
+
+    // Case 2: Empty list with nil context
+    plugin.sendCallResult(pathList: [])
+    XCTAssertNil(plugin.callContext)
+
+    // Case 3: Multiple paths with nil context
+    plugin.sendCallResult(pathList: ["one.jpg", "two.jpg"])
+    XCTAssertNil(plugin.callContext)
+
+    // Case 4: Repeated execution (forces coverage tracking)
+    plugin.sendCallResult(pathList: ["repeat"])
+    XCTAssertNil(plugin.callContext)
+  }
+
+  func testSendCallResult_WithEmptyPaths_ReturnsEmptyArray() {
+
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+
+    // Case 1: Empty paths (your original case)
+    do {
+      let expectation = expectation(description: "Empty result")
 
       plugin.callContext = ImagePickerMethodCallContext { paths, error in
-        XCTAssertNil(paths)
+        XCTAssertEqual(paths?.count ?? 0, 0)
+        XCTAssertNil(error)
         expectation.fulfill()
       }
 
-      plugin.showCamera(.rear, with: UIImagePickerController())
-
+      plugin.sendCallResult(pathList: [])
       waitForExpectations(timeout: 1)
     }
-    
-    func testLaunchUIImagePicker_WithNoMediaTypes_DoesNotCrash() {
-      let plugin = ImagePickerPlugin(
-        viewProvider: StubViewProvider(viewController: UIViewController())
-      )
 
-      let context = ImagePickerMethodCallContext { _, _ in }
+    // Case 2: Non-empty paths (forces mapping branch)
+    do {
+      let expectation = expectation(description: "Non-empty result")
 
-      // ✅ FIX: ensure at least one valid type
-      context.includeImages = true
+      let testPaths = ["path1.jpg", "path2.jpg"]
 
-      plugin.callContext = context
-
-      let mockPicker = MockUIImagePickerController()
-      plugin.setImagePickerControllerOverrides([mockPicker])
-
-      plugin.launchUIImagePicker(
-        with: SourceSpecification(type: .gallery, camera: .rear),
-        context: context
-      )
-
-        if #available(iOS 14.0, *) {
-            XCTAssertTrue(mockPicker.mediaTypes.contains(UTType.image.identifier))
-        } else {
-            // Fallback on earlier versions
-        }
-    }
-
-    func testHandlePickerResults_WithNilContext_DoesNothing() {
-      if #available(iOS 14, *) {
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-        plugin.callContext = nil
-
-        plugin.handlePickerResults([])
-      }
-    }
-
-    func testPickVideo_WithNilViewController_DoesNotCrash() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-
-      plugin.pickVideo(
-        source: SourceSpecification(type: .gallery, camera: .rear),
-        maxDurationSeconds: 5
-      ) { _ in }
-
-      XCTAssertNotNil(plugin.callContext)
-    }
-
-    func testPickImage_WithNilViewController_DoesNotCrash() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-
-      plugin.pickImage(
-        source: SourceSpecification(type: .gallery, camera: .rear),
-        maxSize: MaxSize(),
-        imageQuality: nil,
-        requestFullMetadata: false
-      ) { _ in }
-
-      XCTAssertNotNil(plugin.callContext)
-    }
-
-    func testErrorNoCameraAccess_Denied_Code() {
-      let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-      let expectation = self.expectation(description: "Denied camera access")
-
-      plugin.callContext = ImagePickerMethodCallContext { _, error in
-        XCTAssertEqual((error as? PigeonError)?.code, "camera_access_denied")
+      plugin.callContext = ImagePickerMethodCallContext { paths, error in
+        XCTAssertEqual(paths?.count, 2)
+        XCTAssertEqual(paths, testPaths)
+        XCTAssertNil(error)
         expectation.fulfill()
       }
 
-      plugin.errorNoCameraAccess(.denied)
+      plugin.sendCallResult(pathList: testPaths)
       waitForExpectations(timeout: 1)
     }
 
-    func testCreateImagePickerController_MultipleOverridesSequentially() {
+    // Case 3: Single path (edge case)
+    do {
+      let expectation = expectation(description: "Single result")
+
+      let singlePath = ["single.jpg"]
+
+      plugin.callContext = ImagePickerMethodCallContext { paths, error in
+        XCTAssertEqual(paths?.count, 1)
+        XCTAssertEqual(paths?.first, "single.jpg")
+        expectation.fulfill()
+      }
+
+      plugin.sendCallResult(pathList: singlePath)
+      waitForExpectations(timeout: 1)
+    }
+
+    // Case 4: Repeated call (ensures coverage tracking)
+    plugin.callContext = ImagePickerMethodCallContext { _, _ in }
+    plugin.sendCallResult(pathList: [])
+  }
+
+  func testCameraDevice_DefaultFallback() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+
+    let source = SourceSpecification(type: .gallery, camera: .rear)
+    XCTAssertEqual(plugin.cameraDevice(for: source), .rear)
+  }
+
+  func testRemoveInteractionBlocker_WhenNil_DoesNotCrash() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+
+    plugin.interactionBlockerWindow = nil
+    plugin.previousKeyWindow = nil
+
+    plugin.removeInteractionBlocker()
+    XCTAssertNil(plugin.interactionBlockerWindow)
+  }
+
+  func testShowCamera_WhenDeviceNotAvailable_ReturnsNil() {
+    let mockHandler = MockDeviceCapabilityHandler()
+    mockHandler.isCameraDeviceAvailableResult = false
+
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()),
+      deviceCapabilityHandler: mockHandler
+    )
+
+    let expectation = self.expectation(description: "No camera device")
+
+    plugin.callContext = ImagePickerMethodCallContext { paths, error in
+      XCTAssertNil(paths)
+      expectation.fulfill()
+    }
+
+    plugin.showCamera(.rear, with: UIImagePickerController())
+
+    waitForExpectations(timeout: 1)
+  }
+
+  func testLaunchUIImagePicker_WithNoMediaTypes_DoesNotCrash() {
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController())
+    )
+
+    let context = ImagePickerMethodCallContext { _, _ in }
+
+    // ensure at least one valid type
+    context.includeImages = true
+
+    plugin.callContext = context
+
+    let mockPicker = MockUIImagePickerController()
+    plugin.setImagePickerControllerOverrides([mockPicker])
+
+    plugin.launchUIImagePicker(
+      with: SourceSpecification(type: .gallery, camera: .rear),
+      context: context
+    )
+
+    if #available(iOS 14.0, *) {
+      XCTAssertTrue(mockPicker.mediaTypes.contains(UTType.image.identifier))
+    } else {
+      // Fallback on earlier versions
+    }
+  }
+
+  func testHandlePickerResults_WithNilContext_DoesNothing() {
+    if #available(iOS 14, *) {
       let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+      plugin.callContext = nil
 
-      let picker1 = MockUIImagePickerController()
-      let picker2 = MockUIImagePickerController()
+      plugin.handlePickerResults([])
+    }
+  }
 
-      plugin.setImagePickerControllerOverrides([picker1, picker2])
+  func testPickVideo_WithNilViewController_DoesNotCrash() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
 
-      XCTAssertEqual(plugin.createImagePickerController(), picker1)
-      XCTAssertEqual(plugin.createImagePickerController(), picker2)
+    plugin.pickVideo(
+      source: SourceSpecification(type: .gallery, camera: .rear),
+      maxDurationSeconds: 5
+    ) { _ in }
 
-      // fallback to new instance
-      XCTAssertNotEqual(plugin.createImagePickerController(), picker1)
+    XCTAssertNotNil(plugin.callContext)
+  }
+
+  func testPickImage_WithNilViewController_DoesNotCrash() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+
+    plugin.pickImage(
+      source: SourceSpecification(type: .gallery, camera: .rear),
+      maxSize: MaxSize(),
+      imageQuality: nil,
+      requestFullMetadata: false
+    ) { _ in }
+
+    XCTAssertNotNil(plugin.callContext)
+  }
+
+  func testErrorNoCameraAccess_Denied_Code() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let expectation = self.expectation(description: "Denied camera access")
+
+    plugin.callContext = ImagePickerMethodCallContext { _, error in
+      XCTAssertEqual((error as? PigeonError)?.code, "camera_access_denied")
+      expectation.fulfill()
     }
 
-    func testScaledImage_NoConstraints_ReturnsOriginal() {
-      let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
+    plugin.errorNoCameraAccess(.denied)
+    waitForExpectations(timeout: 1)
+  }
 
-      let scaled = ImagePickerImageUtil.scaledImage(
-        image,
-        maxWidth: nil,
-        maxHeight: nil,
-        isMetadataAvailable: false
-      )
+  func testCreateImagePickerController_MultipleOverridesSequentially() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
 
-      XCTAssertEqual(image.size, scaled.size)
+    let picker1 = MockUIImagePickerController()
+    let picker2 = MockUIImagePickerController()
+
+    plugin.setImagePickerControllerOverrides([picker1, picker2])
+
+    XCTAssertEqual(plugin.createImagePickerController(), picker1)
+    XCTAssertEqual(plugin.createImagePickerController(), picker2)
+
+    // fallback to new instance
+    XCTAssertNotEqual(plugin.createImagePickerController(), picker1)
+  }
+
+  func testScaledImage_NoConstraints_ReturnsOriginal() {
+    let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
+
+    let scaled = ImagePickerImageUtil.scaledImage(
+      image,
+      maxWidth: nil,
+      maxHeight: nil,
+      isMetadataAvailable: false
+    )
+
+    XCTAssertEqual(image.size, scaled.size)
+  }
+
+  func testDefaultDeviceCapabilityHandler() {
+    let handler = DefaultDeviceCapabilityHandler()
+    // These will call real system APIs, so we just ensure they don't crash on simulators
+    _ = handler.isSourceTypeAvailable(.photoLibrary)
+    _ = handler.isCameraDeviceAvailable(.rear)
+    _ = handler.cameraAuthorizationStatus()
+    _ = handler.photoLibraryAuthorizationStatus()
+  }
+
+  func testPresentationControllerDidDismiss() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let expectation = self.expectation(description: "Dismiss sends nil")
+    plugin.callContext = ImagePickerMethodCallContext { paths, error in
+      XCTAssertNil(paths)
+      expectation.fulfill()
     }
-
-    func testDefaultDeviceCapabilityHandler() {
-        let handler = DefaultDeviceCapabilityHandler()
-        // These will call real system APIs, so we just ensure they don't crash on simulators
-        _ = handler.isSourceTypeAvailable(.photoLibrary)
-        _ = handler.isCameraDeviceAvailable(.rear)
-        _ = handler.cameraAuthorizationStatus()
-        _ = handler.photoLibraryAuthorizationStatus()
-    }
-
-    func testPresentationControllerDidDismiss() {
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-        let expectation = self.expectation(description: "Dismiss sends nil")
-        plugin.callContext = ImagePickerMethodCallContext { paths, error in
-            XCTAssertNil(paths)
-            expectation.fulfill()
-        }
-        plugin.presentationControllerDidDismiss(UIPresentationController(presentedViewController: UIViewController(), presenting: nil))
-        waitForExpectations(timeout: 1)
-    }
+    plugin.presentationControllerDidDismiss(
+      UIPresentationController(presentedViewController: UIViewController(), presenting: nil))
+    waitForExpectations(timeout: 1)
+  }
 
   func testCheckCameraAuthorization_NotDetermined_Denied() {
     let mockHandler = MockDeviceCapabilityHandler()
     mockHandler.cameraAuthorizationStatusResult = .notDetermined
     mockHandler.requestCameraAccessResult = false
-    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()), deviceCapabilityHandler: mockHandler)
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(viewController: UIViewController()),
+      deviceCapabilityHandler: mockHandler)
 
     let expectation = self.expectation(description: "Denied error")
     plugin.callContext = ImagePickerMethodCallContext { _, error in
@@ -1694,271 +1723,271 @@ class ImagePickerPluginTests: XCTestCase {
     waitForExpectations(timeout: 1)
   }
 
-    func testLaunchPHPicker_WithFullMetadata_ChecksAuthorization() {
-        if #available(iOS 14, *) {
+  func testLaunchPHPicker_WithFullMetadata_ChecksAuthorization() {
+    if #available(iOS 14, *) {
 
-            let mockHandler = MockDeviceCapabilityHandler()
+      let mockHandler = MockDeviceCapabilityHandler()
 
-            let plugin = ImagePickerPlugin(
-                viewProvider: StubViewProvider(viewController: UIViewController()),
-                deviceCapabilityHandler: mockHandler
-            )
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController()),
+        deviceCapabilityHandler: mockHandler
+      )
 
-            let context = ImagePickerMethodCallContext { _, _ in }
+      let context = ImagePickerMethodCallContext { _, _ in }
 
-            // ✅ Case 1: Full metadata + authorized
-            mockHandler.photoLibraryAuthorizationStatusResult = .authorized
-            context.requestFullMetadata = true
+      // Case 1: Full metadata + authorized
+      mockHandler.photoLibraryAuthorizationStatusResult = .authorized
+      context.requestFullMetadata = true
 
-            plugin.launchPHPicker(with: context)
+      plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
+      XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
 
-            // ✅ Case 2: Full metadata + limited authorization (branch coverage)
-            mockHandler.photoLibraryAuthorizationStatusCalled = false
-            mockHandler.photoLibraryAuthorizationStatusResult = .limited
-            context.requestFullMetadata = true
+      // Case 2: Full metadata + limited authorization (branch coverage)
+      mockHandler.photoLibraryAuthorizationStatusCalled = false
+      mockHandler.photoLibraryAuthorizationStatusResult = .limited
+      context.requestFullMetadata = true
 
-            plugin.launchPHPicker(with: context)
+      plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
+      XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
 
-            // ✅ Case 3: Full metadata + denied (failure branch)
-            mockHandler.photoLibraryAuthorizationStatusCalled = false
-            mockHandler.photoLibraryAuthorizationStatusResult = .denied
-            context.requestFullMetadata = true
+      // Case 3: Full metadata + denied (failure branch)
+      mockHandler.photoLibraryAuthorizationStatusCalled = false
+      mockHandler.photoLibraryAuthorizationStatusResult = .denied
+      context.requestFullMetadata = true
 
-            plugin.launchPHPicker(with: context)
+      plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
+      XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
 
-            // ✅ Case 4: requestFullMetadata = false (authorization should not be required path)
-            mockHandler.photoLibraryAuthorizationStatusCalled = false
-            context.requestFullMetadata = false
+      // Case 4: requestFullMetadata = false (authorization should not be required path)
+      mockHandler.photoLibraryAuthorizationStatusCalled = false
+      context.requestFullMetadata = false
 
-            plugin.launchPHPicker(with: context)
+      plugin.launchPHPicker(with: context)
 
-            // Depending on implementation this may or may not be called.
-            // We still assert execution flow.
-            XCTAssertNotNil(plugin.callContext)
+      // Depending on implementation this may or may not be called.
+      // We still assert execution flow.
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 5: Repeat call (ensures execution tracking)
-            mockHandler.photoLibraryAuthorizationStatusCalled = false
-            context.requestFullMetadata = true
-            mockHandler.photoLibraryAuthorizationStatusResult = .authorized
+      // Case 5: Repeat call (ensures execution tracking)
+      mockHandler.photoLibraryAuthorizationStatusCalled = false
+      context.requestFullMetadata = true
+      mockHandler.photoLibraryAuthorizationStatusResult = .authorized
 
-            plugin.launchPHPicker(with: context)
+      plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
-        }
+      XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
     }
+  }
 
-    func testPickImage_FromGallery_LaunchesPHPicker() {
-        if #available(iOS 14, *) {
+  func testPickImage_FromGallery_LaunchesPHPicker() {
+    if #available(iOS 14, *) {
 
-            let plugin = ImagePickerPlugin(
-                viewProvider: StubViewProvider(viewController: UIViewController())
-            )
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController())
+      )
 
-            // ✅ Case 1: Original scenario
-            plugin.pickImage(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxSize: MaxSize(),
-                imageQuality: nil,
-                requestFullMetadata: false
-            ) { _ in }
+      // Case 1: Original scenario
+      plugin.pickImage(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxSize: MaxSize(),
+        imageQuality: nil,
+        requestFullMetadata: false
+      ) { _ in }
 
-            XCTAssertNotNil(plugin.callContext)
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 2: With image quality
-            plugin.pickImage(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxSize: MaxSize(),
-                imageQuality: 50,
-                requestFullMetadata: false
-            ) { _ in }
+      // Case 2: With image quality
+      plugin.pickImage(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxSize: MaxSize(),
+        imageQuality: 50,
+        requestFullMetadata: false
+      ) { _ in }
 
-            XCTAssertNotNil(plugin.callContext)
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 3: With metadata request
-            plugin.pickImage(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxSize: MaxSize(),
-                imageQuality: nil,
-                requestFullMetadata: true
-            ) { _ in }
+      // Case 3: With metadata request
+      plugin.pickImage(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxSize: MaxSize(),
+        imageQuality: nil,
+        requestFullMetadata: true
+      ) { _ in }
 
-            XCTAssertNotNil(plugin.callContext)
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 4: With custom maxSize values (forces scaling branch)
-            let customSize = MaxSize(width: 100, height: 100)
+      // Case 4: With custom maxSize values (forces scaling branch)
+      let customSize = MaxSize(width: 100, height: 100)
 
-            plugin.pickImage(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxSize: customSize,
-                imageQuality: 75,
-                requestFullMetadata: true
-            ) { _ in }
+      plugin.pickImage(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxSize: customSize,
+        imageQuality: 75,
+        requestFullMetadata: true
+      ) { _ in }
 
-            XCTAssertNotNil(plugin.callContext)
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 5: Different camera option (branch coverage)
-            plugin.pickImage(
-                source: SourceSpecification(type: .gallery, camera: .front),
-                maxSize: MaxSize(),
-                imageQuality: 10,
-                requestFullMetadata: false
-            ) { _ in }
+      // Case 5: Different camera option (branch coverage)
+      plugin.pickImage(
+        source: SourceSpecification(type: .gallery, camera: .front),
+        maxSize: MaxSize(),
+        imageQuality: 10,
+        requestFullMetadata: false
+      ) { _ in }
 
-            XCTAssertNotNil(plugin.callContext)
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Additional: repeated invocation (ensures execution tracking)
-            plugin.pickImage(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxSize: MaxSize(),
-                imageQuality: 1,
-                requestFullMetadata: false
-            ) { _ in }
+      // Additional: repeated invocation (ensures execution tracking)
+      plugin.pickImage(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxSize: MaxSize(),
+        imageQuality: 1,
+        requestFullMetadata: false
+      ) { _ in }
 
-            XCTAssertNotNil(plugin.callContext)
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Ensure latest context exists
-            let latestContext = plugin.callContext
-            XCTAssertNotNil(latestContext)
-        }
+      // Ensure latest context exists
+      let latestContext = plugin.callContext
+      XCTAssertNotNil(latestContext)
     }
+  }
 
+  func testPickVideo_FromGallery_LaunchesPHPicker() {
+    if #available(iOS 14, *) {
 
-    func testPickVideo_FromGallery_LaunchesPHPicker() {
-        if #available(iOS 14, *) {
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController())
+      )
 
-            let plugin = ImagePickerPlugin(
-                viewProvider: StubViewProvider(viewController: UIViewController())
-            )
+      // Case 1: original scenario (gallery, no duration)
+      plugin.pickVideo(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxDurationSeconds: nil
+      ) { _ in }
 
-            // ✅ Case 1: original scenario (gallery, no duration)
-            plugin.pickVideo(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxDurationSeconds: nil
-            ) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            XCTAssertNotNil(plugin.callContext)
+      // Case 2: gallery with duration
+      plugin.pickVideo(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxDurationSeconds: 10
+      ) { _ in }
 
-            // ✅ Case 2: gallery with duration
-            plugin.pickVideo(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxDurationSeconds: 10
-            ) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            XCTAssertNotNil(plugin.callContext)
+      // Case 3: gallery with different camera option (branch coverage)
+      plugin.pickVideo(
+        source: SourceSpecification(type: .gallery, camera: .front),
+        maxDurationSeconds: nil
+      ) { _ in }
 
-            // ✅ Case 3: gallery with different camera option (branch coverage)
-            plugin.pickVideo(
-                source: SourceSpecification(type: .gallery, camera: .front),
-                maxDurationSeconds: nil
-            ) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            XCTAssertNotNil(plugin.callContext)
+      // Case 4: force repeated execution (important for coverage tracking)
+      plugin.pickVideo(
+        source: SourceSpecification(type: .gallery, camera: .rear),
+        maxDurationSeconds: 1
+      ) { _ in }
 
-            // ✅ Case 4: force repeated execution (important for coverage tracking)
-            plugin.pickVideo(
-                source: SourceSpecification(type: .gallery, camera: .rear),
-                maxDurationSeconds: 1
-            ) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            XCTAssertNotNil(plugin.callContext)
-
-            // ✅ Additional validation: ensure context updated
-            let latestContext = plugin.callContext
-            XCTAssertNotNil(latestContext)
-        }
+      // Additional validation: ensure context updated
+      let latestContext = plugin.callContext
+      XCTAssertNotNil(latestContext)
     }
+  }
 
-    func testPickMultiVideo_LaunchesPHPicker() {
-        if #available(iOS 14, *) {
+  func testPickMultiVideo_LaunchesPHPicker() {
+    if #available(iOS 14, *) {
 
-            let plugin = ImagePickerPlugin(
-                viewProvider: StubViewProvider(viewController: UIViewController())
-            )
+      let plugin = ImagePickerPlugin(
+        viewProvider: StubViewProvider(viewController: UIViewController())
+      )
 
-            // ✅ Case 1: original scenario
-            plugin.pickMultiVideo(maxDurationSeconds: nil, limit: nil) { _ in }
-            XCTAssertNotNil(plugin.callContext)
+      // Case 1: original scenario
+      plugin.pickMultiVideo(maxDurationSeconds: nil, limit: nil) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 2: with limit
-            plugin.pickMultiVideo(maxDurationSeconds: nil, limit: 3) { _ in }
-            XCTAssertNotNil(plugin.callContext)
+      // Case 2: with limit
+      plugin.pickMultiVideo(maxDurationSeconds: nil, limit: 3) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 3: with max duration
-            plugin.pickMultiVideo(maxDurationSeconds: 10, limit: nil) { _ in }
-            XCTAssertNotNil(plugin.callContext)
+      // Case 3: with max duration
+      plugin.pickMultiVideo(maxDurationSeconds: 10, limit: nil) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Case 4: both parameters provided
-            plugin.pickMultiVideo(maxDurationSeconds: 15, limit: 5) { _ in }
-            XCTAssertNotNil(plugin.callContext)
+      // Case 4: both parameters provided
+      plugin.pickMultiVideo(maxDurationSeconds: 15, limit: 5) { _ in }
+      XCTAssertNotNil(plugin.callContext)
 
-            // ✅ Additional coverage: ensure callContext updates across calls
-            let latestContext = plugin.callContext
-            XCTAssertNotNil(latestContext)
+      // Additional coverage: ensure callContext updates across calls
+      let latestContext = plugin.callContext
+      XCTAssertNotNil(latestContext)
 
-            // ✅ Additional safety: repeated invocation forces branch execution
-            plugin.pickMultiVideo(maxDurationSeconds: 1, limit: 1) { _ in }
-            XCTAssertNotNil(plugin.callContext)
-        }
+      // Additional safety: repeated invocation forces branch execution
+      plugin.pickMultiVideo(maxDurationSeconds: 1, limit: 1) { _ in }
+      XCTAssertNotNil(plugin.callContext)
     }
+  }
 
-
-
-    func testCheckCameraAuthorization_UnknownDefault() {
-        let mockHandler = MockDeviceCapabilityHandler()
-        // Force unknown default by casting an invalid Int to AVAuthorizationStatus
-        mockHandler.cameraAuthorizationStatusResult = AVAuthorizationStatus(rawValue: 99)!
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(), deviceCapabilityHandler: mockHandler)
-        let expectation = self.expectation(description: "Unknown status error")
-        plugin.callContext = ImagePickerMethodCallContext { _, error in
-            XCTAssertNotNil(error)
-            expectation.fulfill()
-        }
-        plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
-        waitForExpectations(timeout: 1)
+  func testCheckCameraAuthorization_UnknownDefault() {
+    let mockHandler = MockDeviceCapabilityHandler()
+    // Force unknown default by casting an invalid Int to AVAuthorizationStatus
+    mockHandler.cameraAuthorizationStatusResult = AVAuthorizationStatus(rawValue: 99)!
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(), deviceCapabilityHandler: mockHandler)
+    let expectation = self.expectation(description: "Unknown status error")
+    plugin.callContext = ImagePickerMethodCallContext { _, error in
+      XCTAssertNotNil(error)
+      expectation.fulfill()
     }
+    plugin.checkCameraAuthorization(with: UIImagePickerController(), camera: .rear)
+    waitForExpectations(timeout: 1)
+  }
 
-    func testCheckPhotoAuthorization_UnknownDefault() {
-        let mockHandler = MockDeviceCapabilityHandler()
-        mockHandler.photoLibraryAuthorizationStatusResult = PHAuthorizationStatus(rawValue: 99)!
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(), deviceCapabilityHandler: mockHandler)
-        let expectation = self.expectation(description: "Unknown status error photo")
-        plugin.callContext = ImagePickerMethodCallContext { _, error in
-            XCTAssertNotNil(error)
-            expectation.fulfill()
-        }
-        plugin.checkPhotoAuthorization(with: UIViewController())
-        waitForExpectations(timeout: 1)
+  func testCheckPhotoAuthorization_UnknownDefault() {
+    let mockHandler = MockDeviceCapabilityHandler()
+    mockHandler.photoLibraryAuthorizationStatusResult = PHAuthorizationStatus(rawValue: 99)!
+    let plugin = ImagePickerPlugin(
+      viewProvider: StubViewProvider(), deviceCapabilityHandler: mockHandler)
+    let expectation = self.expectation(description: "Unknown status error photo")
+    plugin.callContext = ImagePickerMethodCallContext { _, error in
+      XCTAssertNotNil(error)
+      expectation.fulfill()
     }
+    plugin.checkPhotoAuthorization(with: UIViewController())
+    waitForExpectations(timeout: 1)
+  }
 
-    func testRemoveInteractionBlocker_KeyWindowLogic() {
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-        let blocker = UIWindow()
-        let previous = UIWindow()
-        plugin.interactionBlockerWindow = blocker
-        plugin.previousKeyWindow = previous
+  func testRemoveInteractionBlocker_KeyWindowLogic() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let blocker = UIWindow()
+    let previous = UIWindow()
+    plugin.interactionBlockerWindow = blocker
+    plugin.previousKeyWindow = previous
 
-        plugin.removeInteractionBlocker()
+    plugin.removeInteractionBlocker()
 
-        XCTAssertNil(plugin.interactionBlockerWindow)
-        XCTAssertNil(plugin.previousKeyWindow)
+    XCTAssertNil(plugin.interactionBlockerWindow)
+    XCTAssertNil(plugin.previousKeyWindow)
+  }
+
+  func testPresentationControllerDidDismiss_Full() {
+    let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
+    let expectation = self.expectation(description: "dismissed")
+    plugin.callContext = ImagePickerMethodCallContext { paths, error in
+      XCTAssertNil(paths)
+      expectation.fulfill()
     }
-
-    func testPresentationControllerDidDismiss_Full() {
-        let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
-        let expectation = self.expectation(description: "dismissed")
-        plugin.callContext = ImagePickerMethodCallContext { paths, error in
-            XCTAssertNil(paths)
-            expectation.fulfill()
-        }
-        plugin.presentationControllerDidDismiss(UIPresentationController(presentedViewController: UIViewController(), presenting: nil))
-        waitForExpectations(timeout: 1)
-    }
+    plugin.presentationControllerDidDismiss(
+      UIPresentationController(presentedViewController: UIViewController(), presenting: nil))
+    waitForExpectations(timeout: 1)
+  }
 
   class MockUIImagePickerController: UIImagePickerController {
     var mockIsBeingPresented = false
@@ -1972,14 +2001,19 @@ class ImagePickerPluginTests: XCTestCase {
     }
     override var cameraDevice: UIImagePickerController.CameraDevice {
       get { return .rear }
-      set { }
+      set {}
     }
   }
 
   class StubViewProvider: ViewProvider {
-    var viewController: UIViewController?
+    private var viewProviderViewController: UIViewController?
+
     init(viewController: UIViewController? = nil) {
-      self.viewController = viewController
+      self.viewProviderViewController = viewController
+    }
+
+    var viewController: UIViewController? {
+      return viewProviderViewController
     }
   }
 
@@ -2022,7 +2056,10 @@ class ImagePickerPluginTests: XCTestCase {
     func messenger() -> FlutterBinaryMessenger { return TestBinaryMessenger() }
     func textures() -> FlutterTextureRegistry { fatalError() }
     func register(_ factory: FlutterPlatformViewFactory, withId id: String) {}
-    func register(_ factory: FlutterPlatformViewFactory, withId id: String, gestureRecognizersBlockingPolicy: FlutterPlatformViewGestureRecognizersBlockingPolicy) {}
+    func register(
+      _ factory: FlutterPlatformViewFactory, withId id: String,
+      gestureRecognizersBlockingPolicy: FlutterPlatformViewGestureRecognizersBlockingPolicy
+    ) {}
     func publish(_ value: NSObject) { publishedInstance = value }
     func addMethodCallDelegate(_ delegate: FlutterPlugin, channel: FlutterMethodChannel) {}
     func addApplicationDelegate(_ delegate: FlutterPlugin) {}
@@ -2035,8 +2072,12 @@ class ImagePickerPluginTests: XCTestCase {
   class TestBinaryMessenger: NSObject, FlutterBinaryMessenger, @unchecked Sendable {
     var handlers: [String: FlutterBinaryMessageHandler] = [:]
     func send(onChannel channel: String, message: Data?) {}
-    func send(onChannel channel: String, message: Data?, binaryReply callback: FlutterBinaryReply? = nil) {}
-    func setMessageHandlerOnChannel(_ channel: String, binaryMessageHandler handler: FlutterBinaryMessageHandler? = nil) -> FlutterBinaryMessengerConnection {
+    func send(
+      onChannel channel: String, message: Data?, binaryReply callback: FlutterBinaryReply? = nil
+    ) {}
+    func setMessageHandlerOnChannel(
+      _ channel: String, binaryMessageHandler handler: FlutterBinaryMessageHandler? = nil
+    ) -> FlutterBinaryMessengerConnection {
       if let handler = handler {
         handlers[channel] = handler
       } else {
@@ -2047,6 +2088,3 @@ class ImagePickerPluginTests: XCTestCase {
     func cleanUpConnection(_ connection: FlutterBinaryMessengerConnection) {}
   }
 }
-
-
-
