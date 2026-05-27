@@ -72,10 +72,8 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
             app.descendants(matching: .any)[identifier]
         ]
 
-        for element in discoveryOrder {
-            if element.exists {
-                return element
-            }
+        for element in discoveryOrder where element.exists {
+            return element
         }
         return app.buttons[identifier].firstMatch
     }
@@ -90,7 +88,8 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
                 if doneButton.exists {
                     doneButton.tap()
                 } else {
-                    app.keyboards.element(boundBy: 0).coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: -0.05)).tap()
+                    let keyboard = app.keyboards.element(boundBy: 0)
+                    keyboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: -0.05)).tap()
                 }
             }
             _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Wait for keyboard")], timeout: 1.0)

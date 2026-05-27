@@ -8,16 +8,10 @@ import Photos
 import UIKit
 import XCTest
 
-class PhotoAssetUtilTests: XCTestCase {
-    func testGetAssetFromImagePickerInfo_ReturnsAssetIfAvailable() {
-        // Note: instantiating a real PHAsset is restricted, but we can test the lookup.
-        let mockData: [UIImagePickerController.InfoKey: Any] = [:]
-        XCTAssertNil(ImagePickerPhotoAssetUtil.getAsset(from: mockData))
-    }
-
+class PhotoAssetUtilVideoTests: XCTestCase {
     func testSaveVideo_WithValidURL_ShouldSucceed() throws {
         let tempURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_video.mp4")
-        try? "test".data(using: .utf8)?.write(to: tempURL)
+        try? Data("test".utf8).write(to: tempURL)
 
         let savedURL = ImagePickerPhotoAssetUtil.saveVideo(from: tempURL)
         XCTAssertNotNil(savedURL)
@@ -31,6 +25,42 @@ class PhotoAssetUtilTests: XCTestCase {
         let invalidURL = URL(fileURLWithPath: "/non/existent/path.mp4")
         let savedURL = ImagePickerPhotoAssetUtil.saveVideo(from: invalidURL)
         XCTAssertNil(savedURL)
+    }
+
+    func testSaveVideo_WhenCopyFails_ReturnsNil() {
+        // Creating a URL that is readable but whose copy might fail?
+        // Maybe a directory instead of a file.
+        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_dir")
+        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+        let result = ImagePickerPhotoAssetUtil.saveVideo(from: tempDir)
+        XCTAssertNil(result)
+
+        try? FileManager.default.removeItem(at: tempDir)
+    }
+
+    func testSaveVideo_WhenSourceNotReadable_ReturnsNil() {
+        let nonExistentURL = URL(fileURLWithPath: "/tmp/this_does_not_exist_at_all.mp4")
+        let result = ImagePickerPhotoAssetUtil.saveVideo(from: nonExistentURL)
+        XCTAssertNil(result)
+    }
+
+    func testSaveVideo_WithDirectoryInsteadOfFile_ReturnsNil() {
+        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_dir_negative")
+        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+        let result = ImagePickerPhotoAssetUtil.saveVideo(from: tempDir)
+        XCTAssertNil(result)
+
+        try? FileManager.default.removeItem(at: tempDir)
+    }
+}
+
+class PhotoAssetUtilTests: XCTestCase {
+    func testGetAssetFromImagePickerInfo_ReturnsAssetIfAvailable() {
+        // Note: instantiating a real PHAsset is restricted, but we can test the lookup.
+        let mockData: [UIImagePickerController.InfoKey: Any] = [:]
+        XCTAssertNil(ImagePickerPhotoAssetUtil.getAsset(from: mockData))
     }
 
     func testSaveImage_WithOriginalImageData_ShouldSaveWithCorrectExtension() throws {
@@ -227,8 +257,8 @@ class PhotoAssetUtilTests: XCTestCase {
         let frameCount = CGImageSourceGetCount(imageSource)
         XCTAssertGreaterThan(frameCount, 1)
 
-        for i in 0 ..< frameCount {
-            let frameImage = try XCTUnwrap(CGImageSourceCreateImageAtIndex(imageSource, i, nil))
+        for index in 0 ..< frameCount {
+            let frameImage = try XCTUnwrap(CGImageSourceCreateImageAtIndex(imageSource, index, nil))
             XCTAssertLessThanOrEqual(CGFloat(frameImage.width), 5.0)
             XCTAssertLessThanOrEqual(CGFloat(frameImage.height), 5.0)
         }
@@ -278,34 +308,6 @@ class PhotoAssetUtilTests: XCTestCase {
         XCTAssertNil(result)
     }
 
-    func testSaveVideo_WhenCopyFails_ReturnsNil() {
-        // Creating a URL that is readable but whose copy might fail?
-        // Maybe a directory instead of a file.
-        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_dir")
-        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-
-        let result = ImagePickerPhotoAssetUtil.saveVideo(from: tempDir)
-        XCTAssertNil(result)
-
-        try? FileManager.default.removeItem(at: tempDir)
-    }
-
-    func testSaveVideo_WhenSourceNotReadable_ReturnsNil() {
-        let nonExistentURL = URL(fileURLWithPath: "/tmp/this_does_not_exist_at_all.mp4")
-        let result = ImagePickerPhotoAssetUtil.saveVideo(from: nonExistentURL)
-        XCTAssertNil(result)
-    }
-
-    func testSaveVideo_WithDirectoryInsteadOfFile_ReturnsNil() {
-        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_dir_negative")
-        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-
-        let result = ImagePickerPhotoAssetUtil.saveVideo(from: tempDir)
-        XCTAssertNil(result)
-
-        try? FileManager.default.removeItem(at: tempDir)
-    }
-
     func testSaveImage_GifWithScaling_Success() throws {
         let dataGIF = ImagePickerTestImages.gifTestData
         let imageGIF = try XCTUnwrap(UIImage(data: dataGIF))
@@ -337,20 +339,6 @@ class PhotoAssetUtilTests: XCTestCase {
         )
         XCTAssertNil(path)
     }
-
-    //  func testSaveImage_GifWithoutData_ReturnsNil() {
-//    // If type is inferred as .gif but originalImageData is nil
-//    // This is hard to trigger via public API but let's see.
-//    // Actually, saveImage with originalImageData: nil will default type to .jpeg.
-//    let image = UIImage()
-//    let path = ImagePickerPhotoAssetUtil.saveImage(
-//        with: nil,
-//        image: image,
-//        maxWidth: nil,
-//        maxHeight: nil,
-//        imageQuality: nil)
-//    XCTAssertNotNil(path)
-    //  }
 
     func testSaveImage_WithGifScaling_FailureReturnsNil() {
         // Create a case where scaledGIFImage returns nil

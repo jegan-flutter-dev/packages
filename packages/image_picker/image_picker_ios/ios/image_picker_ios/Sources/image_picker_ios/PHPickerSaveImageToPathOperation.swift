@@ -73,8 +73,7 @@ final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sendable {
 
         // This supports uniform types that conform to UTTypeImage.
         if itemProvider.hasItemConformingToTypeIdentifier(imageTypeIdentifier) {
-            itemProvider.loadDataRepresentation(forTypeIdentifier: imageTypeIdentifier) {
-                [weak self] data, error in
+            itemProvider.loadDataRepresentation(forTypeIdentifier: imageTypeIdentifier) { [weak self] data, error in
                 guard let self = self else { return }
                 if let data = data {
                     self.processImage(data)
@@ -150,8 +149,7 @@ final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sendable {
             return
         }
 
-        itemProvider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) {
-            [weak self] videoURL, error in
+        itemProvider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { [weak self] videoURL, error in
             guard let self = self else { return }
             if let error = error {
                 self.completeOperation(path: nil, error: error)
