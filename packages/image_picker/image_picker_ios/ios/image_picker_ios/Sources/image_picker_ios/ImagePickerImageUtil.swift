@@ -23,11 +23,8 @@ enum ImagePickerImageUtil {
         let originalWidth = image.size.width
         let originalHeight = image.size.height
 
-        let hasMaxWidth = maxWidth != nil
-        let hasMaxHeight = maxHeight != nil
-
-        let shouldDownscaleWidth = hasMaxWidth && maxWidth! < originalWidth
-        let shouldDownscaleHeight = hasMaxHeight && maxHeight! < originalHeight
+        let shouldDownscaleWidth = maxWidth.map { $0 < originalWidth } ?? false
+        let shouldDownscaleHeight = maxHeight.map { $0 < originalHeight } ?? false
         let shouldDownscale = shouldDownscaleWidth || shouldDownscaleHeight
 
         if !shouldDownscale {
@@ -36,8 +33,8 @@ enum ImagePickerImageUtil {
 
         let aspectRatio = originalWidth / originalHeight
 
-        var width = hasMaxWidth ? round(maxWidth!) : originalWidth
-        var height = hasMaxHeight ? round(maxHeight!) : originalHeight
+        var width = maxWidth.map { round($0) } ?? originalWidth
+        var height = maxHeight.map { round($0) } ?? originalHeight
 
         let widthForMaxHeight = height * aspectRatio
         let heightForMaxWidth = width / aspectRatio

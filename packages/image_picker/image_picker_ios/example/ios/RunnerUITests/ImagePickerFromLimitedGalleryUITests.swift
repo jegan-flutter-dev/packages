@@ -6,13 +6,12 @@ import XCTest
 
 @MainActor
 class ImagePickerFromLimitedGalleryUITests: XCTestCase {
-    var app: XCUIApplication!
+    var app = XCUIApplication()
     let elementWaitingTime: TimeInterval = 60
 
     override func setUp() async throws {
         try await super.setUp()
         continueAfterFailure = false
-        app = XCUIApplication()
 
         if #available(iOS 13.4, *) {
             app.resetAuthorizationStatus(for: .photos)

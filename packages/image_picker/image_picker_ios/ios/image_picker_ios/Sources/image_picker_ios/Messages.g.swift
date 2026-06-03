@@ -64,7 +64,7 @@ private func isNullish(_ value: Any?) -> Bool {
 
 private func nilOrValue<T>(_ value: Any?) -> T? {
     if value is NSNull { return nil }
-    return value as! T?
+    return value as? T
 }
 
 private func doubleEqualsMessages(_ lhs: Double, _ rhs: Double) -> Bool {
@@ -233,10 +233,13 @@ struct MediaSelectionOptions: Hashable {
 
     // swift-format-ignore: AlwaysUseLowerCamelCase
     static func fromList(_ pigeonVar_list: [Any?]) -> MediaSelectionOptions? {
-        let maxSize = pigeonVar_list[0] as! MaxSize
+        guard let maxSize = pigeonVar_list[0] as? MaxSize,
+            let requestFullMetadata = pigeonVar_list[2] as? Bool,
+            let allowMultiple = pigeonVar_list[3] as? Bool
+        else {
+            return nil
+        }
         let imageQuality: Int64? = nilOrValue(pigeonVar_list[1])
-        let requestFullMetadata = pigeonVar_list[2] as! Bool
-        let allowMultiple = pigeonVar_list[3] as! Bool
         let limit: Int64? = nilOrValue(pigeonVar_list[4])
 
         return MediaSelectionOptions(
@@ -282,8 +285,11 @@ struct SourceSpecification: Hashable {
 
     // swift-format-ignore: AlwaysUseLowerCamelCase
     static func fromList(_ pigeonVar_list: [Any?]) -> SourceSpecification? {
-        let type = pigeonVar_list[0] as! SourceType
-        let camera = pigeonVar_list[1] as! SourceCamera
+        guard let type = pigeonVar_list[0] as? SourceType,
+            let camera = pigeonVar_list[1] as? SourceCamera
+        else {
+            return nil
+        }
 
         return SourceSpecification(
             type: type,
@@ -355,25 +361,25 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
     override func readValue(ofType type: UInt8) -> Any? {
         switch type {
         case 129:
-            let enumResultAsInt: Int? = nilOrValue(readValue() as! Int?)
+            let enumResultAsInt: Int? = nilOrValue(readValue())
             if let enumResultAsInt = enumResultAsInt {
                 return SourceCamera(rawValue: enumResultAsInt)
             }
             return nil
         case 130:
-            let enumResultAsInt: Int? = nilOrValue(readValue() as! Int?)
+            let enumResultAsInt: Int? = nilOrValue(readValue())
             if let enumResultAsInt = enumResultAsInt {
                 return SourceType(rawValue: enumResultAsInt)
             }
             return nil
         case 131:
-            return MaxSize.fromList(readValue() as! [Any?])
+            return (readValue() as? [Any?]).flatMap { MaxSize.fromList($0) }
         case 132:
-            return MediaSelectionOptions.fromList(readValue() as! [Any?])
+            return (readValue() as? [Any?]).flatMap { MediaSelectionOptions.fromList($0) }
         case 133:
-            return SourceSpecification.fromList(readValue() as! [Any?])
+            return (readValue() as? [Any?]).flatMap { SourceSpecification.fromList($0) }
         case 134:
-            return CoverageModel.fromList(readValue() as! [Any?])
+            return (readValue() as? [Any?]).flatMap { CoverageModel.fromList($0) }
         default:
             return super.readValue(ofType: type)
         }
@@ -442,11 +448,15 @@ class ImagePickerApiSetup {
         let pickImageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickImage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
         if let api = api {
             pickImageChannel.setMessageHandler { message, reply in
-                let args = message as! [Any?]
-                let sourceArg = args[0] as! SourceSpecification
-                let maxSizeArg = args[1] as! MaxSize
+                guard let args = message as? [Any?],
+                    let sourceArg = args[0] as? SourceSpecification,
+                    let maxSizeArg = args[1] as? MaxSize,
+                    let requestFullMetadataArg = args[3] as? Bool
+                else {
+                    reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
+                    return
+                }
                 let imageQualityArg: Int64? = nilOrValue(args[2])
-                let requestFullMetadataArg = args[3] as! Bool
                 api.pickImage(source: sourceArg, maxSize: maxSizeArg, imageQuality: imageQualityArg, requestFullMetadata: requestFullMetadataArg) { result in
                     switch result {
                     case let .success(res):
@@ -462,10 +472,14 @@ class ImagePickerApiSetup {
         let pickMultiImageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiImage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
         if let api = api {
             pickMultiImageChannel.setMessageHandler { message, reply in
-                let args = message as! [Any?]
-                let maxSizeArg = args[0] as! MaxSize
+                guard let args = message as? [Any?],
+                    let maxSizeArg = args[0] as? MaxSize,
+                    let requestFullMetadataArg = args[2] as? Bool
+                else {
+                    reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
+                    return
+                }
                 let imageQualityArg: Int64? = nilOrValue(args[1])
-                let requestFullMetadataArg = args[2] as! Bool
                 let limitArg: Int64? = nilOrValue(args[3])
                 api.pickMultiImage(maxSize: maxSizeArg, imageQuality: imageQualityArg, requestFullMetadata: requestFullMetadataArg, limit: limitArg) { result in
                     switch result {
@@ -482,8 +496,12 @@ class ImagePickerApiSetup {
         let pickVideoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickVideo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
         if let api = api {
             pickVideoChannel.setMessageHandler { message, reply in
-                let args = message as! [Any?]
-                let sourceArg = args[0] as! SourceSpecification
+                guard let args = message as? [Any?],
+                    let sourceArg = args[0] as? SourceSpecification
+                else {
+                    reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
+                    return
+                }
                 let maxDurationSecondsArg: Int64? = nilOrValue(args[1])
                 api.pickVideo(source: sourceArg, maxDurationSeconds: maxDurationSecondsArg) { result in
                     switch result {
@@ -500,7 +518,10 @@ class ImagePickerApiSetup {
         let pickMultiVideoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMultiVideo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
         if let api = api {
             pickMultiVideoChannel.setMessageHandler { message, reply in
-                let args = message as! [Any?]
+                guard let args = message as? [Any?] else {
+                    reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
+                    return
+                }
                 let maxDurationSecondsArg: Int64? = nilOrValue(args[0])
                 let limitArg: Int64? = nilOrValue(args[1])
                 api.pickMultiVideo(maxDurationSeconds: maxDurationSecondsArg, limit: limitArg) { result in
@@ -519,8 +540,12 @@ class ImagePickerApiSetup {
         let pickMediaChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.image_picker_ios.ImagePickerApi.pickMedia\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
         if let api = api {
             pickMediaChannel.setMessageHandler { message, reply in
-                let args = message as! [Any?]
-                let mediaSelectionOptionsArg = args[0] as! MediaSelectionOptions
+                guard let args = message as? [Any?],
+                    let mediaSelectionOptionsArg = args[0] as? MediaSelectionOptions
+                else {
+                    reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
+                    return
+                }
                 api.pickMedia(mediaSelectionOptions: mediaSelectionOptionsArg) { result in
                     switch result {
                     case let .success(res):

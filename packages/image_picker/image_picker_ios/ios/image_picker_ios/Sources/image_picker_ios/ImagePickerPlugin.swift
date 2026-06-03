@@ -96,8 +96,9 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
     }
 
     func createImagePickerController() -> UIImagePickerController {
-        if let overrides = imagePickerControllerOverrides, !overrides.isEmpty {
-            return imagePickerControllerOverrides!.removeFirst()
+        if let picker = imagePickerControllerOverrides?.first {
+            imagePickerControllerOverrides?.removeFirst()
+            return picker
         }
         return UIImagePickerController()
     }
@@ -211,7 +212,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         }
         context.includeImages = true
         context.maxSize = maxSize
-        context.imageQuality = imageQuality != nil ? Double(imageQuality!) : nil
+        context.imageQuality = imageQuality.map(Double.init)
         context.maxItemCount = 1
         context.requestFullMetadata = requestFullMetadata
 
@@ -240,9 +241,9 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         }
         context.includeImages = true
         context.maxSize = maxSize
-        context.imageQuality = imageQuality != nil ? Double(imageQuality!) : nil
+        context.imageQuality = imageQuality.map(Double.init)
         context.requestFullMetadata = requestFullMetadata
-        context.maxItemCount = limit != nil ? Int(limit!) : 0
+        context.maxItemCount = Int(limit ?? 0)
 
         if #available(iOS 14, *) {
             launchPHPicker(with: context)
@@ -266,8 +267,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
             }
         }
         context.maxSize = mediaSelectionOptions.maxSize
-        context.imageQuality =
-            mediaSelectionOptions.imageQuality != nil ? Double(mediaSelectionOptions.imageQuality!) : nil
+        context.imageQuality = mediaSelectionOptions.imageQuality.map(Double.init)
         context.requestFullMetadata = mediaSelectionOptions.requestFullMetadata
         context.includeImages = true
         context.includeVideo = true
@@ -332,7 +332,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
             }
         }
         context.includeVideo = true
-        context.maxItemCount = limit != nil ? Int(limit!) : 0
+        context.maxItemCount = Int(limit ?? 0)
         context.maxDuration = TimeInterval(maxDurationSeconds ?? 0)
 
         if #available(iOS 14, *) {
@@ -602,9 +602,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
                 )
             }
 
-            if originalAsset == nil {
-                saveImage(withPickerInfo: info, image: processedImage, imageQuality: desiredImageQuality)
-            } else {
+            if let originalAsset = originalAsset {
                 let resultHandler: (Data?, [AnyHashable: Any]?) -> Void = {
                     [weak self] imageData, _ in
                     self?.saveImage(
@@ -617,16 +615,18 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
                 }
 
                 if #available(iOS 13.0, *) {
-                    PHImageManager.default().requestImageDataAndOrientation(for: originalAsset!, options: nil) {
+                    PHImageManager.default().requestImageDataAndOrientation(for: originalAsset, options: nil) {
                         data, _, _, info in
                         resultHandler(data, info)
                     }
                 } else {
-                    PHImageManager.default().requestImageData(for: originalAsset!, options: nil) {
+                    PHImageManager.default().requestImageData(for: originalAsset, options: nil) {
                         data, _, _, info in
                         resultHandler(data, info)
                     }
                 }
+            } else {
+                saveImage(withPickerInfo: info, image: processedImage, imageQuality: desiredImageQuality)
             }
         }
     }
@@ -654,7 +654,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
             maxHeight: maxHeight,
             imageQuality: imageQuality
         )
-        sendCallResult(pathList: savedPath != nil ? [savedPath!] : [])
+        sendCallResult(pathList: savedPath.map { [$0] } ?? [])
     }
 
     private func saveImage(
@@ -667,7 +667,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
             image: image,
             imageQuality: imageQuality
         )
-        sendCallResult(pathList: savedPath != nil ? [savedPath!] : [])
+        sendCallResult(pathList: savedPath.map { [$0] } ?? [])
     }
 
     func sendCallResult(pathList: [String]? = nil, error: Error? = nil) {

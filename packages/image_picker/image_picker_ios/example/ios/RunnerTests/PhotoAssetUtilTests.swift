@@ -63,7 +63,7 @@ class PhotoAssetUtilTests: XCTestCase {
         XCTAssertEqual(try URL(fileURLWithPath: XCTUnwrap(savedPathGIF)).pathExtension, "gif")
 
         let newDataGIF = try Data(contentsOf: URL(fileURLWithPath: XCTUnwrap(savedPathGIF)))
-        let imageSource = CGImageSourceCreateWithData(newDataGIF as CFData, nil)!
+        let imageSource = try XCTUnwrap(CGImageSourceCreateWithData(newDataGIF as CFData, nil))
         XCTAssertGreaterThan(CGImageSourceGetCount(imageSource), 1)
 
         try? FileManager.default.removeItem(atPath: try XCTUnwrap(savedPathGIF))
@@ -223,7 +223,7 @@ class PhotoAssetUtilTests: XCTestCase {
         )
 
         let savedData = try Data(contentsOf: URL(fileURLWithPath: XCTUnwrap(savedPath)))
-        let imageSource = CGImageSourceCreateWithData(savedData as CFData, nil)!
+        let imageSource = try XCTUnwrap(CGImageSourceCreateWithData(savedData as CFData, nil))
         let frameCount = CGImageSourceGetCount(imageSource)
         XCTAssertGreaterThan(frameCount, 1)
 

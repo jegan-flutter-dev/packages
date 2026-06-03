@@ -425,7 +425,7 @@ class ImagePickerImageUtilTests: XCTestCase {
 
     func testScaledGIFImage_InvalidDataReturnsNil() {
         // ✅ Case 1: Invalid string data (original)
-        let stringData = "Not a gif".data(using: .utf8)!
+        let stringData = "Not a gif".data(using: .utf8) ?? Data()
         let result1 = ImagePickerImageUtil.scaledGIFImage(
             stringData,
             maxWidth: 5,

@@ -202,7 +202,12 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
                 fullMetadata: false
             ) { savedPath, _ in
                 XCTAssertNotNil(savedPath)
-                XCTAssertTrue(FileManager.default.fileExists(atPath: savedPath!))
+                do {
+                    let path = try XCTUnwrap(savedPath)
+                    XCTAssertTrue(FileManager.default.fileExists(atPath: path))
+                } catch {
+                    XCTFail("Failed to unwrap savedPath")
+                }
                 pathExpectation.fulfill()
             }
 
