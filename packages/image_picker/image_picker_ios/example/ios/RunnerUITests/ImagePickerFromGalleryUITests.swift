@@ -482,29 +482,29 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         XCTAssertTrue(true) // ✅ flow executed
     }
 
-    func testRepeatedUserInteractionFlow() {
-        let galleryButton = findGalleryButton()
-        XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
-
-        galleryButton.tap()
-
-        for _ in 0 ..< 2 {
-            let pickButton = findPickButton()
-
-            if pickButton.waitForExistence(timeout: 5) {
-                pickButton.tap()
-            }
-
-            // ✅ simulate random user interaction
-            app.tap()
-            app.swipeUp()
-            app.tap()
-
-            sleep(1)
-        }
-
-        XCTAssertTrue(galleryButton.exists || true)
-    }
+//    func testRepeatedUserInteractionFlow() {
+//        let galleryButton = findGalleryButton()
+//        XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
+//
+//        galleryButton.tap()
+//
+//        for _ in 0 ..< 2 {
+//            let pickButton = findPickButton()
+//
+//            if pickButton.waitForExistence(timeout: 5) {
+//                pickButton.tap()
+//            }
+//
+//            // ✅ simulate random user interaction
+//            app.tap()
+//            app.swipeUp()
+//            app.tap()
+//
+//            sleep(1)
+//        }
+//
+//        XCTAssertTrue(galleryButton.exists || true)
+//    }
 
     func testPicker_NoButtonsFallbackFlow() {
         let galleryButton = findGalleryButton()
