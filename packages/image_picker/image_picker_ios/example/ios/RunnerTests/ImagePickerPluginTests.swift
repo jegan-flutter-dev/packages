@@ -1101,7 +1101,11 @@ class ImagePickerPluginTests: XCTestCase {
 
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
-            let decoded = MessagesPigeonCodec.shared.decode(reply!) as! [Any?]
+            guard let reply = reply,
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                XCTFail("Reply should not be nil")
+                return
+            }
             XCTAssertEqual(decoded[0] as? String, "test/path")
             expectation.fulfill()
         }
@@ -1123,7 +1127,11 @@ class ImagePickerPluginTests: XCTestCase {
 
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
-            let decoded = MessagesPigeonCodec.shared.decode(reply!) as! [Any?]
+            guard let reply = reply,
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                XCTFail("Reply should not be nil")
+                return
+            }
             XCTAssertEqual((decoded[0] as? [String])?.count, 2)
             expectation.fulfill()
         }
@@ -1166,7 +1174,11 @@ class ImagePickerPluginTests: XCTestCase {
 
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
-            let decoded = MessagesPigeonCodec.shared.decode(reply!) as! [Any?]
+            guard let reply = reply,
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                XCTFail("Reply should not be nil")
+                return
+            }
             XCTAssertEqual(decoded[0] as? String, "video/path")
             expectation.fulfill()
         }
@@ -1188,7 +1200,11 @@ class ImagePickerPluginTests: XCTestCase {
 
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
-            let decoded = MessagesPigeonCodec.shared.decode(reply!) as! [Any?]
+            guard let reply = reply,
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                XCTFail("Reply should not be nil")
+                return
+            }
             XCTAssertEqual((decoded[0] as? [String])?.count, 1)
             expectation.fulfill()
         }
@@ -1232,7 +1248,11 @@ class ImagePickerPluginTests: XCTestCase {
 
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
-            let decoded = MessagesPigeonCodec.shared.decode(reply!) as! [Any?]
+            guard let reply = reply,
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                XCTFail("Reply should not be nil")
+                return
+            }
             XCTAssertNotNil(decoded[0])
             expectation.fulfill()
         }
@@ -1276,7 +1296,11 @@ class ImagePickerPluginTests: XCTestCase {
 
         let expectation = self.expectation(description: "Reply called with error")
         handler?(message) { reply in
-            let decoded = MessagesPigeonCodec.shared.decode(reply!) as! [Any?]
+            guard let reply = reply,
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                XCTFail("Reply should not be nil")
+                return
+            }
             XCTAssertEqual(decoded[0] as? String, "test_code")
             XCTAssertEqual(decoded[1] as? String, "test_message")
             expectation.fulfill()
@@ -1357,7 +1381,11 @@ class ImagePickerPluginTests: XCTestCase {
 
         let expectation = self.expectation(description: "Reply called with generic error")
         handler?(message) { reply in
-            let decoded = MessagesPigeonCodec.shared.decode(reply!) as! [Any?]
+            guard let reply = reply,
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                XCTFail("Reply should not be nil")
+                return
+            }
             XCTAssertNotNil(decoded[0] as? String)
             expectation.fulfill()
         }
