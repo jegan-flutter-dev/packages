@@ -89,11 +89,11 @@ internal final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sen
     } else if itemProvider.hasItemConformingToTypeIdentifier(movieTypeIdentifier) {
       processVideo()
     } else {
-      let pigeonError = PigeonError(
-        code: "invalid_source",
-        message: "Invalid media source.",
-        details: nil)
-      completeOperation(path: nil, error: pigeonError)
+        let flutterError = FlutterError(
+            code: "invalid_image",
+            message: error?.localizedDescription,
+            details: (error as NSError?)?.domain)
+        self.completeOperation(path: nil, error: flutterError as! Error)
     }
   }
 
@@ -104,12 +104,14 @@ internal final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sen
   }
 
   private func processImage(_ pickerImageData: Data) {
-    guard var localImage = UIImage(data: pickerImageData) else {
-      let error = PigeonError(
-        code: "invalid_image", message: "Could not decode image from data.", details: nil)
-      completeOperation(path: nil, error: error)
-      return
-    }
+      guard var localImage = UIImage(data: pickerImageData) else {
+          let flutterError = FlutterError(
+            code: "invalid_source",
+            message: "Invalid media source.",
+            details: nil)
+          completeOperation(path: nil, error: flutterError as! Error)
+          return
+      }
 
     if maxWidth != nil || maxHeight != nil {
       localImage = ImagePickerImageUtil.scaledImage(
