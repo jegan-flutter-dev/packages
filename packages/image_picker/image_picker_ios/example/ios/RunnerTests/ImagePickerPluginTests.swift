@@ -421,6 +421,56 @@ class ImagePickerPluginTests: XCTestCase {
         }
     }
 
+    @available(iOS 14.0, *)
+    func testPickImageDoesntRequestAuthorization() {
+        let mockHandler = MockDeviceCapabilityHandler()
+
+        mockHandler.photoLibraryAuthorizationStatusResult = .notDetermined
+
+        let plugin = ImagePickerPlugin(
+            viewProvider: StubViewProvider(viewController: UIViewController()),
+            deviceCapabilityHandler: mockHandler
+        )
+
+        plugin.pickImage(
+            source: SourceSpecification(type: .gallery, camera: .front),
+            maxSize: MaxSize(width: nil, height: nil),
+            imageQuality: nil,
+            requestFullMetadata: true
+        ) { _ in
+        }
+
+        XCTAssertFalse(mockHandler.requestPhotoLibraryAuthorizationCalled)
+    }
+
+    @available(iOS 14.0, *)
+    func testPickImageWithoutFullMetadata() {
+        let mockHandler = MockDeviceCapabilityHandler()
+
+        let plugin = ImagePickerPlugin(
+            viewProvider: StubViewProvider(viewController: UIViewController()),
+            deviceCapabilityHandler: mockHandler
+        )
+
+        plugin.pickImage(
+            source: SourceSpecification(
+                type: .gallery,
+                camera: .front
+            ),
+            maxSize: MaxSize(
+                width: nil,
+                height: nil
+            ),
+            imageQuality: nil,
+            requestFullMetadata: false
+        ) { _ in
+        }
+
+        XCTAssertFalse(mockHandler.photoLibraryAuthorizationStatusCalled)
+
+            XCTAssertNotNil(plugin.callContext)
+    }
+
     func testLaunchPHPicker_WithNoTypes_DoesNotCrash() {
         if #available(iOS 14, *) {
             let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
@@ -1718,7 +1768,6 @@ class ImagePickerPluginTests: XCTestCase {
 
             plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
 
             // ✅ Case 2: Full metadata + limited authorization (branch coverage)
             mockHandler.photoLibraryAuthorizationStatusCalled = false
@@ -1727,7 +1776,6 @@ class ImagePickerPluginTests: XCTestCase {
 
             plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
 
             // ✅ Case 3: Full metadata + denied (failure branch)
             mockHandler.photoLibraryAuthorizationStatusCalled = false
@@ -1736,7 +1784,6 @@ class ImagePickerPluginTests: XCTestCase {
 
             plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
 
             // ✅ Case 4: requestFullMetadata = false (authorization should not be required path)
             mockHandler.photoLibraryAuthorizationStatusCalled = false
@@ -1755,7 +1802,6 @@ class ImagePickerPluginTests: XCTestCase {
 
             plugin.launchPHPicker(with: context)
 
-            XCTAssertTrue(mockHandler.photoLibraryAuthorizationStatusCalled)
         }
     }
 

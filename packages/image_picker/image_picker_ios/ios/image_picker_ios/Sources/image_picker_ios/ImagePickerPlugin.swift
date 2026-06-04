@@ -137,12 +137,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         pickerViewController.delegate = self
         pickerViewController.presentationController?.delegate = self
         callContext = context
-
-        if context.requestFullMetadata {
-            checkPhotoAuthorization(with: pickerViewController)
-        } else {
-            showPhotoLibrary(with: pickerViewController)
-        }
+        showPhotoLibrary(with: pickerViewController)
     }
 
     func launchUIImagePicker(
