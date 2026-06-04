@@ -7,8 +7,6 @@ import UIKit
 import XCTest
 
 class ImageUtilTests: XCTestCase {
-    /// Corner colors of test image scaled to 3x2. Format is "R G B A".
-    /// Using a small epsilon for float comparison.
     private func colorsAreEqual(_ s1: String?, _ s2: String) -> Bool {
         guard let s1 = s1 else { return false }
         let components1 = s1.split(separator: " ").compactMap { Double($0) }
@@ -23,12 +21,11 @@ class ImageUtilTests: XCTestCase {
         }
         return true
     }
-    
-    private let kColorRepresentation3x2BottomLeftYellow = "1 0.776471 0 1";
-    private let kColorRepresentation3x2TopLeftRed = "1 0.0666667 0 1";
-    private let kColorRepresentation3x2BottomRightCyan = "0 0.772549 1 1";
-    private let kColorRepresentation3x2TopRightBlue = "0 0.0705882 0.996078 1";
-    
+
+    private let kColorRepresentation3x2BottomLeftYellow = "1 0.776471 0 1"
+    private let kColorRepresentation3x2TopLeftRed = "1 0.0666667 0 1"
+    private let kColorRepresentation3x2BottomRightCyan = "0 0.772549 1 1"
+    private let kColorRepresentation3x2TopRightBlue = "0 0.0705882 0.996078 1"
 
     private func colorStringAtPixel(_ image: UIImage, x: Int, y: Int) -> String? {
         guard let cgImage = image.cgImage else { return nil }
@@ -284,7 +281,7 @@ class ImageUtilTests: XCTestCase {
         )
         XCTAssertNil(invalidResult)
     }
-    
+
     func normalizedImage(_ image: UIImage) -> UIImage {
         if image.imageOrientation == .up {
             return image
@@ -332,23 +329,19 @@ class ImageUtilTests: XCTestCase {
 
         return normalizedImage
     }
-    
-    func testScaledImage_ShouldBeCorrectRotation() {
-        // Load image from bundle
-        let bundle = Bundle(for: type(of: self))
-        let url = bundle.url(forResource: "jpgImageWithRightOrientation", withExtension: "jpg")!
-        let imageData = try! Data(contentsOf: url)
-        let image = UIImage(data: imageData)!
 
-        // Initial assertions
+    func testScaledImage_ShouldBeCorrectRotation() throws {
+        let bundle = Bundle(for: type(of: self))
+        let url = try XCTUnwrap(bundle.url(forResource: "jpgImageWithRightOrientation", withExtension: "jpg"))
+        let imageData = try Data(contentsOf: url)
+        let image = try XCTUnwrap(UIImage(data: imageData))
+
         XCTAssertEqual(image.size.width, 130)
         XCTAssertEqual(image.size.height, 174)
         XCTAssertEqual(image.imageOrientation, .right)
-        
-        
+
         let normalized = normalizedImage(image)
 
-        // Call scaling method
         let newImage = ImagePickerImageUtil.scaledImage(
             normalized,
             maxWidth: 10,
@@ -356,20 +349,17 @@ class ImageUtilTests: XCTestCase {
             isMetadataAvailable: true
         )
 
-        // Assertions after scaling
         XCTAssertEqual(newImage.size.width, 10)
         XCTAssertEqual(newImage.size.height, 7)
         XCTAssertEqual(newImage.imageOrientation, .up)
     }
-    
-    func testScaledImage_ShouldBeScaledWithNoMetadata() {
-        // Load test image
-        let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
+
+    func testScaledImage_ShouldBeScaledWithNoMetadata() throws {
+        let image = try XCTUnwrap(UIImage(data: ImagePickerTestImages.jpgTestData))
 
         let scaledWidth: CGFloat = 3
         let scaledHeight: CGFloat = 2
 
-        // Scale image
         let scaledImage = ImagePickerImageUtil.scaledImage(
             image,
             maxWidth: scaledWidth,
@@ -377,11 +367,9 @@ class ImageUtilTests: XCTestCase {
             isMetadataAvailable: false
         )
 
-        // Size assertions
         XCTAssertEqual(scaledImage.size.width, scaledWidth)
         XCTAssertEqual(scaledImage.size.height, scaledHeight)
 
-        // Check the corners to ensure no rotation
         XCTAssertEqual(
             colorStringAtPixel(scaledImage, x: 0, y: 0),
             kColorRepresentation3x2BottomLeftYellow
@@ -402,16 +390,13 @@ class ImageUtilTests: XCTestCase {
             kColorRepresentation3x2TopRightBlue
         )
     }
-    
-    func testScaledImage_WideImage_ShouldBeScaledBelowMaxHeight() {
-        // Load test image
-        let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
 
-        // Initial size assertions
+    func testScaledImage_WideImage_ShouldBeScaledBelowMaxHeight() throws {
+        let image = try XCTUnwrap(UIImage(data: ImagePickerTestImages.jpgTestData))
+
         XCTAssertEqual(image.size.width, 12)
         XCTAssertEqual(image.size.height, 7)
 
-        // Scale image
         let newImage = ImagePickerImageUtil.scaledImage(
             image,
             maxWidth: 20,
@@ -419,16 +404,13 @@ class ImageUtilTests: XCTestCase {
             isMetadataAvailable: true
         )
 
-        // Assertions
         XCTAssertEqual(newImage.size.width, 10)
         XCTAssertEqual(newImage.size.height, 6)
     }
-    
-    func testScaledImage_WideImage_ShouldBeScaledBelowMaxWidth() {
-        // Load test image
-        let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
 
-        // Scale image
+    func testScaledImage_WideImage_ShouldBeScaledBelowMaxWidth() throws {
+        let image = try XCTUnwrap(UIImage(data: ImagePickerTestImages.jpgTestData))
+
         let newImage = ImagePickerImageUtil.scaledImage(
             image,
             maxWidth: 10,
@@ -436,16 +418,13 @@ class ImageUtilTests: XCTestCase {
             isMetadataAvailable: true
         )
 
-        // Assertions
         XCTAssertEqual(newImage.size.width, 10)
         XCTAssertEqual(newImage.size.height, 6)
     }
 
-    func testScaledImage_WideImage_ShouldNotBeScaledAboveOriginaWidthOrHeight() {
-        // Load test image
-        let image = UIImage(data: ImagePickerTestImages.jpgTestData)!
+    func testScaledImage_WideImage_ShouldNotBeScaledAboveOriginaWidthOrHeight() throws {
+        let image = try XCTUnwrap(UIImage(data: ImagePickerTestImages.jpgTestData))
 
-        // Scale image
         let newImage = ImagePickerImageUtil.scaledImage(
             image,
             maxWidth: 100,
@@ -453,14 +432,13 @@ class ImageUtilTests: XCTestCase {
             isMetadataAvailable: true
         )
 
-        // Assertions: should not upscale beyond original size
         XCTAssertEqual(newImage.size.width, 12)
         XCTAssertEqual(newImage.size.height, 7)
     }
 
     func testScaledImage_ImageIsNil() {
         let image: UIImage? = nil
-        
+
         guard let image = image else {
             return
         }
@@ -474,8 +452,8 @@ class ImageUtilTests: XCTestCase {
 
         XCTAssertNil(newImage)
     }
-    
-    func testScaledImage_TallImage_ShouldBeScaledBelowMaxHeight() throws {
+
+    func testScaledImage_TallImage_ShouldBeScaledBelowMaxHeight() {
         guard let image = UIImage(data: ImagePickerTestImages.jpgTallTestData) else {
             XCTFail("Image creation failed")
             return
@@ -495,15 +473,13 @@ class ImageUtilTests: XCTestCase {
         XCTAssertEqual(newImage.size.height, 5)
     }
 
-    
     func testScaledImage_TallImage_ShouldBeScaledBelowMaxWidth() {
         // Load test image
         guard let image = UIImage(data: ImagePickerTestImages.jpgTallTestData) else {
             XCTFail("Image creation failed")
             return
         }
-        
-        // Scale image
+
         let newImage = ImagePickerImageUtil.scaledImage(
             image,
             maxWidth: 3,
@@ -511,19 +487,16 @@ class ImageUtilTests: XCTestCase {
             isMetadataAvailable: true
         )
 
-        // Assertions
         XCTAssertEqual(newImage.size.width, 3)
         XCTAssertEqual(newImage.size.height, 5)
     }
 
     func testScaledImage_TallImage_ShouldNotBeScaledAboveOriginaWidthOrHeight() {
-        // Load test image
         guard let image = UIImage(data: ImagePickerTestImages.jpgTallTestData) else {
             XCTFail("Image creation failed")
             return
         }
-        
-        // Scale image
+
         let newImage = ImagePickerImageUtil.scaledImage(
             image,
             maxWidth: 10,
@@ -531,17 +504,16 @@ class ImageUtilTests: XCTestCase {
             isMetadataAvailable: true
         )
 
-        // Assertions: should not upscale beyond original size
         XCTAssertEqual(newImage.size.width, 4)
         XCTAssertEqual(newImage.size.height, 7)
     }
-    
+
     func testScaledImage_ImageMaxWidthZeroAndMaxHeightIsZero() {
         guard let image = UIImage(data: ImagePickerTestImages.jpgTestData) else {
             XCTFail("Image creation failed")
             return
         }
-        
+
         let newImage = ImagePickerImageUtil.scaledImage(
             image,
             maxWidth: 0,
@@ -552,6 +524,4 @@ class ImageUtilTests: XCTestCase {
         XCTAssertNotNil(newImage)
         XCTAssertEqual(newImage.size, image.size)
     }
-
 }
-

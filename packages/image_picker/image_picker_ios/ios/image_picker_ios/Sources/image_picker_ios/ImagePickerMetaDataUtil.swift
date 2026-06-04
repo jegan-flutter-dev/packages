@@ -17,7 +17,6 @@ enum ImagePickerMetaDataUtil {
     static let defaultSuffix = ".jpg"
     static let defaultMIMEType: ImagePickerMIMEType = .jpeg
 
-    /// Retrieve MIME type by reading the image data. We currently only support some popular types.
     static func getImageMIMEType(from imageData: Data) -> ImagePickerMIMEType {
         if imageData.isEmpty {
             return .other
@@ -36,7 +35,6 @@ enum ImagePickerMetaDataUtil {
         }
     }
 
-    /// Get corresponding suffix from type.
     static func imageTypeSuffix(from type: ImagePickerMIMEType) -> String? {
         switch type {
         case .jpeg:
@@ -57,8 +55,6 @@ enum ImagePickerMetaDataUtil {
         return CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
     }
 
-    /// Creates and returns data for a new image based on imageData, but with the
-    /// given metadata.
     static func image(from imageData: Data, with metadata: [String: Any]) -> Data? {
         guard let source = CGImageSourceCreateWithData(imageData as CFData, nil) else {
             return nil
@@ -76,7 +72,6 @@ enum ImagePickerMetaDataUtil {
         return targetData as Data
     }
 
-    /// Converting UIImage to a Data with the type provided.
     static func convertImage(
         _ image: UIImage,
         using type: ImagePickerMIMEType,
@@ -95,7 +90,6 @@ enum ImagePickerMetaDataUtil {
         case .png:
             return image.pngData()
         default:
-            // converts to JPEG by default.
             let qualityFloat = CGFloat(quality ?? 1.0)
             return image.jpegData(compressionQuality: qualityFloat)
         }

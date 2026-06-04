@@ -71,7 +71,6 @@ final class PHPickerSaveImageToPathOperation: Operation, @unchecked Sendable {
         let imageTypeIdentifier = UTType.image.identifier
         let movieTypeIdentifier = UTType.movie.identifier
 
-        // This supports uniform types that conform to UTTypeImage.
         if itemProvider.hasItemConformingToTypeIdentifier(imageTypeIdentifier) {
             itemProvider.loadDataRepresentation(forTypeIdentifier: imageTypeIdentifier) {
                 [weak self] data, error in

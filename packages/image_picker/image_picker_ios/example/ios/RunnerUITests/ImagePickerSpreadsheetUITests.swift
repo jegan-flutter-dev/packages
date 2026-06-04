@@ -13,8 +13,6 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
         try await super.setUp()
         continueAfterFailure = false
         app = XCUIApplication()
-        // We don't reset authorization here to allow testing different states if needed,
-        // but for clean integration tests, we usually want a known state.
         app.launch()
     }
 
@@ -22,8 +20,6 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
         app.terminate()
         try await super.tearDown()
     }
-
-    // MARK: - Helper Methods
 
     private func findElement(identifier: String) -> XCUIElement {
         let discoveryOrder = [
@@ -45,21 +41,16 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
         pickButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
-    // MARK: - Test Cases from Spreadsheet
-
-    /// ImagePicker_04: Multi-Select Functionality
     func testMultiSelectFunctionality() {
         let multiImageButton = findElement(identifier: "Pick multiple images")
         XCTAssertTrue(multiImageButton.waitForExistence(timeout: elementWaitingTime))
         multiImageButton.tap()
 
-        // Handle the "Add optional parameters" dialog
         tapPickButton()
 
         let galleryCancel = app.buttons["Cancel"].firstMatch
         XCTAssertTrue(galleryCancel.waitForExistence(timeout: 30), "Gallery did not appear")
 
-        // Select multiple images (if possible in the simulator/test env)
         let images = app.scrollViews.images
         let count = images.count
         if count >= 2 {
@@ -74,19 +65,15 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
             doneButton.tap()
         }
 
-        // Verify multiple images or at least one is picked
         let pickedImage = app.images["image_picker_example_picked_image"].firstMatch
         XCTAssertTrue(pickedImage.waitForExistence(timeout: elementWaitingTime), "No image was picked in multi-select mode")
     }
 
-    /// ImagePicker_16: Standard Video Selection
     func testStandardVideoSelection() {
         let videoButton = findElement(identifier: "Pick video from gallery")
         XCTAssertTrue(videoButton.waitForExistence(timeout: elementWaitingTime))
         videoButton.tap()
 
-        // Video picker usually doesn't have the optional parameters dialog in this example
-        // but we check just in case it's added.
         let pickButton = app.buttons["PICK"].firstMatch
         if pickButton.exists {
             pickButton.tap()
@@ -95,8 +82,6 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
         let galleryCancel = app.buttons["Cancel"].firstMatch
         XCTAssertTrue(galleryCancel.waitForExistence(timeout: 30), "Gallery did not appear for video")
 
-        // In many simulators there are no videos by default. This test might stay in the gallery.
-        // We check for "Videos" album if it exists or just any selectable item.
         let videoItem = app.scrollViews.images.firstMatch
         if videoItem.exists {
             videoItem.tap()
@@ -104,7 +89,6 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
         }
     }
 
-    /// ImagePicker_23: Mixed Media Selection
     func testMixedMediaSelection() {
         let mixedButton = findElement(identifier: "Pick multiple items")
         XCTAssertTrue(mixedButton.waitForExistence(timeout: elementWaitingTime))
@@ -115,7 +99,6 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
         let galleryCancel = app.buttons["Cancel"].firstMatch
         XCTAssertTrue(galleryCancel.waitForExistence(timeout: 30), "Gallery did not appear for mixed media")
 
-        // Select a few items
         let items = app.scrollViews.images
         if items.count >= 2 {
             items.element(boundBy: 0).tap()
@@ -130,17 +113,13 @@ class ImagePickerSpreadsheetUITests: XCTestCase {
         XCTAssertTrue(app.images["image_picker_example_picked_image"].firstMatch.waitForExistence(timeout: elementWaitingTime))
     }
 
-    /// ImagePicker_15: Capture and Discard (Camera)
-    /// Note: Testing camera in simulator is limited, but we can verify the UI transition.
     func testCaptureAndDiscard() {
         let cameraButton = findElement(identifier: "Take a photo")
         XCTAssertTrue(cameraButton.waitForExistence(timeout: elementWaitingTime))
         cameraButton.tap()
 
-        // Dialog
         tapPickButton()
 
-        // In simulator, this usually shows an error alert "Camera not available"
         let alert = app.alerts["Error"].firstMatch
         if alert.waitForExistence(timeout: 10) {
             XCTAssertTrue(alert.staticTexts["Camera not available."].exists)

@@ -13,7 +13,6 @@ struct GIFInfo {
 }
 
 enum ImagePickerImageUtil {
-    /// Resizes the given image to fit within maxWidth (if non-nil) and maxHeight (if non-nil)
     static func scaledImage(
         _ image: UIImage,
         maxWidth: Double?,
@@ -48,7 +47,6 @@ enum ImagePickerImageUtil {
         return drawScaledImage(image, width: width, height: height) ?? image
     }
 
-    /// Resize all gif animation frames.
     static func scaledGIFImage(
         _ data: Data,
         maxWidth: Double?,

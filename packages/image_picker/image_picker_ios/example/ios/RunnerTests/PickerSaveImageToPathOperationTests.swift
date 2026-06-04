@@ -82,10 +82,8 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
 
             await fulfillment(of: [pathExpectation], timeout: 3)
 
-            // ✅ Ensure operation lifecycle covered
             XCTAssertTrue(operation.isFinished)
 
-            // ✅ Extra coverage: confirm file actually exists
             if let path = outputPath {
                 XCTAssertTrue(FileManager.default.fileExists(atPath: path))
             }
@@ -123,7 +121,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
                 if let path = savedPath,
                    let savedImage = UIImage(contentsOfFile: path)
                 {
-                    // ✅ Ensure scaling branch executed
                     XCTAssertLessThanOrEqual(savedImage.size.width, 5.1)
                     XCTAssertLessThanOrEqual(savedImage.size.height, 5.1)
                 } else {
@@ -137,10 +134,8 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
 
             await fulfillment(of: [pathExpectation], timeout: 3)
 
-            // ✅ Cover operation lifecycle
             XCTAssertTrue(operation.isFinished)
 
-            // ✅ Extra coverage: verify file exists
             if let path = outputPath {
                 XCTAssertTrue(FileManager.default.fileExists(atPath: path))
             }
@@ -179,7 +174,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
 
             await fulfillment(of: [errorExpectation], timeout: 3)
 
-            // ✅ Ensure lifecycle coverage
             XCTAssertTrue(operation.isFinished)
         }
     }
@@ -266,7 +260,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
 
             await fulfillment(of: [errorExpectation], timeout: 2)
 
-            // ✅ Ensures operation lifecycle is also covered
             XCTAssertTrue(operation.isFinished)
         }
     }
@@ -297,17 +290,14 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
                 expectation.fulfill()
             }
 
-            // ✅ Cancel BEFORE start → forces cancel path
             operation.cancel()
             operation.start()
 
             await fulfillment(of: [expectation], timeout: 2)
 
-            // ✅ Validate cancel branch behavior
             XCTAssertTrue(operation.isCancelled)
             XCTAssertTrue(operation.isFinished)
 
-            // ✅ Ensure work was NOT executed
             XCTAssertFalse(completionCalled)
         }
     }
@@ -340,7 +330,7 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
     func testProcessVideo_NoTypeIdentifiers_ReturnsError() async {
         if #available(iOS 14, *) {
             let mockProvider = MockItemProvider()
-            mockProvider.registeredIdentifiers = [] // ✅ No types at all
+            mockProvider.registeredIdentifiers = []
 
             let errorExpectation = expectation(description: "No type identifiers error")
 
@@ -363,7 +353,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
 
             await fulfillment(of: [errorExpectation], timeout: 2)
 
-            // ✅ Ensure lifecycle is covered
             XCTAssertTrue(operation.isFinished)
         }
     }
@@ -387,8 +376,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
                 XCTAssertNil(savedPath)
                 XCTAssertNotNil(error)
 
-                // ✅ FIX: Do NOT force PigeonError
-                // Because operation returns NSError here
                 if let pigeonError = error as? PigeonError {
                     XCTAssertEqual(pigeonError.code, "invalid_video")
                 } else {
@@ -412,7 +399,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
             let mockProvider = MockItemProvider()
             mockProvider.registeredIdentifiers = [UTType.movie.identifier]
 
-            // ✅ Provide invalid file path → copy will fail
             mockProvider.mockURL = URL(fileURLWithPath: "/non/existent/video.mp4")
             mockProvider.shouldSucceed = true
 
@@ -437,7 +423,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
 
             await fulfillment(of: [errorExpectation], timeout: 3)
 
-            // ✅ Ensure operation lifecycle covered
             XCTAssertTrue(operation.isFinished)
         }
     }
@@ -455,7 +440,6 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
                 fullMetadata: false
             ) { _, _ in }
 
-            // ✅ Initial state checks
             XCTAssertTrue(operation.isAsynchronous)
             XCTAssertFalse(operation.isExecuting)
             XCTAssertFalse(operation.isFinished)
@@ -464,12 +448,10 @@ class PickerSaveImageToPathOperationTests: XCTestCase {
                 expectation.fulfill()
             }
 
-            // ✅ Trigger execution
             operation.start()
 
             await fulfillment(of: [expectation], timeout: 2)
 
-            // ✅ Post-execution state
             XCTAssertTrue(operation.isFinished)
         }
     }

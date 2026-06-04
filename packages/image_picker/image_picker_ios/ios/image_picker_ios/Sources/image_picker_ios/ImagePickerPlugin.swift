@@ -37,7 +37,6 @@ protocol DeviceCapabilityHandler {
     func requestPhotoLibraryAuthorization(_ handler: @escaping (PHAuthorizationStatus) -> Void)
 }
 
-/// Default implementation of DeviceCapabilityHandler using system APIs.
 final class DefaultDeviceCapabilityHandler: DeviceCapabilityHandler {
     func isSourceTypeAvailable(_ sourceType: UIImagePickerController.SourceType) -> Bool {
         return UIImagePickerController.isSourceTypeAvailable(sourceType)

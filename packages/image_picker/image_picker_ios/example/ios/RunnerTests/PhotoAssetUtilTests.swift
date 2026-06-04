@@ -10,7 +10,6 @@ import XCTest
 
 class PhotoAssetUtilTests: XCTestCase {
     func testGetAssetFromImagePickerInfo_ReturnsAssetIfAvailable() {
-        // Note: instantiating a real PHAsset is restricted, but we can test the lookup.
         let mockData: [UIImagePickerController.InfoKey: Any] = [:]
         XCTAssertNil(ImagePickerPhotoAssetUtil.getAsset(from: mockData))
     }
@@ -253,9 +252,7 @@ class PhotoAssetUtilTests: XCTestCase {
 
     func testSaveImage_WithInvalidType_DefaultsToJpeg() throws {
         let image = try XCTUnwrap(UIImage(data: ImagePickerTestImages.jpgTestData))
-        // We can't easily force an "invalid" type into saveImage because it's inferred from data,
-        // but we can pass data that results in .other.
-        let dataOther = Data([0x00, 0x01, 0x02]) // Not jpeg, png, or gif
+        let dataOther = Data([0x00, 0x01, 0x02])
         let path = ImagePickerPhotoAssetUtil.saveImage(
             with: dataOther,
             image: image,
@@ -279,8 +276,6 @@ class PhotoAssetUtilTests: XCTestCase {
     }
 
     func testSaveVideo_WhenCopyFails_ReturnsNil() {
-        // Creating a URL that is readable but whose copy might fail?
-        // Maybe a directory instead of a file.
         let tempDir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_dir")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
 
@@ -324,9 +319,7 @@ class PhotoAssetUtilTests: XCTestCase {
     }
 
     func testSaveImage_WithGifInfoNil_ReturnsNil() {
-        // This tests the private saveImage method by passing nil gifInfo.
-        // We can't call it directly but we can trigger it if scaledGIFImage returns nil.
-        let invalidGifData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0]) // Invalid GIF header
+        let invalidGifData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0])
         let image = UIImage()
         let path = ImagePickerPhotoAssetUtil.saveImage(
             with: invalidGifData,
@@ -338,24 +331,8 @@ class PhotoAssetUtilTests: XCTestCase {
         XCTAssertNil(path)
     }
 
-    //  func testSaveImage_GifWithoutData_ReturnsNil() {
-//    // If type is inferred as .gif but originalImageData is nil
-//    // This is hard to trigger via public API but let's see.
-//    // Actually, saveImage with originalImageData: nil will default type to .jpeg.
-//    let image = UIImage()
-//    let path = ImagePickerPhotoAssetUtil.saveImage(
-//        with: nil,
-//        image: image,
-//        maxWidth: nil,
-//        maxHeight: nil,
-//        imageQuality: nil)
-//    XCTAssertNotNil(path)
-    //  }
-
     func testSaveImage_WithGifScaling_FailureReturnsNil() {
-        // Create a case where scaledGIFImage returns nil
-        _ = Data([0, 1, 2]) // Not a gif
-        // We need to force type to .gif. We can't do that easily.
+        _ = Data([0, 1, 2])
     }
 
     func testSaveImage_CreateFileFailure_ReturnsNil() {

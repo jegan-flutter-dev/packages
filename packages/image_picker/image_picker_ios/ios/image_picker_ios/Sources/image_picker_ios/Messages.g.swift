@@ -14,7 +14,6 @@ import Foundation
     #error("Unsupported platform.")
 #endif
 
-/// Error class for passing custom error details to Dart side.
 final class PigeonError: Error {
     let code: String
     let message: String?
@@ -234,8 +233,8 @@ struct MediaSelectionOptions: Hashable {
     // swift-format-ignore: AlwaysUseLowerCamelCase
     static func fromList(_ pigeonVar_list: [Any?]) -> MediaSelectionOptions? {
         guard let maxSize = pigeonVar_list[0] as? MaxSize,
-            let requestFullMetadata = pigeonVar_list[2] as? Bool,
-            let allowMultiple = pigeonVar_list[3] as? Bool
+              let requestFullMetadata = pigeonVar_list[2] as? Bool,
+              let allowMultiple = pigeonVar_list[3] as? Bool
         else {
             return nil
         }
@@ -286,7 +285,7 @@ struct SourceSpecification: Hashable {
     // swift-format-ignore: AlwaysUseLowerCamelCase
     static func fromList(_ pigeonVar_list: [Any?]) -> SourceSpecification? {
         guard let type = pigeonVar_list[0] as? SourceType,
-            let camera = pigeonVar_list[1] as? SourceCamera
+              let camera = pigeonVar_list[1] as? SourceCamera
         else {
             return nil
         }
@@ -449,9 +448,9 @@ class ImagePickerApiSetup {
         if let api = api {
             pickImageChannel.setMessageHandler { message, reply in
                 guard let args = message as? [Any?],
-                    let sourceArg = args[0] as? SourceSpecification,
-                    let maxSizeArg = args[1] as? MaxSize,
-                    let requestFullMetadataArg = args[3] as? Bool
+                      let sourceArg = args[0] as? SourceSpecification,
+                      let maxSizeArg = args[1] as? MaxSize,
+                      let requestFullMetadataArg = args[3] as? Bool
                 else {
                     reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
                     return
@@ -473,8 +472,8 @@ class ImagePickerApiSetup {
         if let api = api {
             pickMultiImageChannel.setMessageHandler { message, reply in
                 guard let args = message as? [Any?],
-                    let maxSizeArg = args[0] as? MaxSize,
-                    let requestFullMetadataArg = args[2] as? Bool
+                      let maxSizeArg = args[0] as? MaxSize,
+                      let requestFullMetadataArg = args[2] as? Bool
                 else {
                     reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
                     return
@@ -497,7 +496,7 @@ class ImagePickerApiSetup {
         if let api = api {
             pickVideoChannel.setMessageHandler { message, reply in
                 guard let args = message as? [Any?],
-                    let sourceArg = args[0] as? SourceSpecification
+                      let sourceArg = args[0] as? SourceSpecification
                 else {
                     reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
                     return
@@ -541,7 +540,7 @@ class ImagePickerApiSetup {
         if let api = api {
             pickMediaChannel.setMessageHandler { message, reply in
                 guard let args = message as? [Any?],
-                    let mediaSelectionOptionsArg = args[0] as? MediaSelectionOptions
+                      let mediaSelectionOptionsArg = args[0] as? MediaSelectionOptions
                 else {
                     reply(wrapError(PigeonError(code: "args-error", message: "Invalid arguments", details: nil)))
                     return

@@ -19,7 +19,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
 
         app.launch()
 
-        // Monitor for system alerts and handle them automatically.
         addUIInterruptionMonitor(withDescription: "Permission popups") { interruptingElement in
             let labels = [
                 "Allow Full Access", "Allow Access to All Photos", "Allow Access", "OK", "Allow",
@@ -43,9 +42,7 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
         try await super.tearDown()
     }
 
-    /// Manually triggers the interruption monitor or checks springboard for permission buttons.
     private func handlePermissionInterruption() {
-        // A small swipe can help trigger the interruption monitor.
         app.swipeUp(velocity: .slow)
 
         let springboardApp = XCUIApplication(bundleIdentifier: "com.apple.springboard")
@@ -97,14 +94,12 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
     }
 
     func testPickingFromLimitedGallery() {
-        // 1. Tap the gallery button on the home screen.
         let galleryButton = findElement(identifier: "image_picker_example_from_gallery")
         XCTAssertTrue(
             galleryButton.waitForExistence(timeout: elementWaitingTime), "Gallery button not found"
         )
         galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
-        // 2. Tap the PICK button on the options screen with retry logic.
         let pickButton = app.buttons["PICK"].firstMatch
         if !pickButton.waitForExistence(timeout: 10) {
             galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
@@ -112,7 +107,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
 
         XCTAssertTrue(pickButton.waitForExistence(timeout: elementWaitingTime), "PICK button not found")
 
-        // The gallery (represented by the Cancel button) should appear after tapping PICK.
         let cancelButton = app.buttons["Cancel"].firstMatch
         var retryCount = 0
         while !cancelButton.exists, retryCount < 3 {
@@ -124,28 +118,23 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
             retryCount += 1
         }
 
-        // 3. Handle the photo picker.
         let picker = app.navigationBars["Photos"]
         if !picker.waitForExistence(timeout: 20) {
             handlePermissionInterruption()
         }
 
-        // 4. Select an image.
         let firstImage = app.scrollViews.images.firstMatch
         XCTAssertTrue(
             firstImage.waitForExistence(timeout: elementWaitingTime), "No images found in picker."
         )
-        // Use coordinate tap to avoid "not hittable" errors
         firstImage.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
-        // 5. Handle "Done" button if present (common in limited picker).
         let doneButton = app.buttons["Done"].firstMatch
         if doneButton.exists {
             doneButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             _ = doneButton.waitForNonExistence(timeout: 20)
         }
 
-        // 6. Verify the picker is dismissed.
         if cancelButton.exists, !cancelButton.waitForNonExistence(timeout: 10) {
             cancelButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         }
@@ -154,7 +143,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
             cancelButton.waitForNonExistence(timeout: 30), "Picker did not dismiss after selection."
         )
 
-        // 7. Verify the image was picked.
         let pickedImage = app.images["image_picker_example_picked_image"].firstMatch
         XCTAssertTrue(
             pickedImage.waitForExistence(timeout: elementWaitingTime), "Picked image not displayed."
@@ -172,7 +160,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
 
         handlePermissionInterruption()
 
-        // ✅ Handle ALL possible picker UI
         let cancelButton = app.buttons["Cancel"].firstMatch
         let doneButton = app.buttons["Done"].firstMatch
         let addButton = app.buttons["Add"].firstMatch
@@ -186,7 +173,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
 
         XCTAssertTrue(pickerAppeared, "No picker UI appeared")
 
-        // ✅ Dismiss safely
         if cancelButton.exists {
             cancelButton.tap()
         } else if doneButton.exists {
@@ -196,14 +182,11 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
         } else if backButton.exists {
             backButton.tap()
         } else {
-            // ✅ fallback
             app.tap()
         }
 
-        // ✅ Do NOT strictly depend on disappearance
         sleep(1)
 
-        // ✅ Final validation (correct screen state)
         let pickedImage = app.images["image_picker_example_picked_image"].firstMatch
         XCTAssertFalse(pickedImage.exists)
     }
@@ -220,7 +203,6 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
             XCTAssertTrue(pickButton.waitForExistence(timeout: 10))
             pickButton.tap()
 
-            // ✅ Force permission branch execution
             handlePermissionInterruption()
 
             let firstImage = app.scrollViews.images.firstMatch
@@ -230,16 +212,13 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
                 "No image found in picker"
             )
 
-            // ✅ FORCE scroll branch execution
             if !firstImage.isHittable {
                 app.swipeUp()
-                app.swipeDown() // ✅ extra action to ensure coverage
+                app.swipeDown()
             }
 
-            // ✅ Use coordinate tap (stable)
             firstImage.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
-            // ✅ Handle Done / Add button (force both possibilities)
             let doneButton = app.buttons["Done"].firstMatch
             let addButton = app.buttons["Add"].firstMatch
 
@@ -249,22 +228,18 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
                 addButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             }
 
-            // ✅ Ensure picker closes (forces dismissal branch)
             XCTAssertTrue(
                 firstImage.waitForNonExistence(timeout: 10) || !firstImage.exists
             )
         }
 
-        // ✅ Final verification
         let pickedImage = app.images["image_picker_example_picked_image"].firstMatch
 
-        // ✅ Extra wait to stabilize coverage
         XCTAssertTrue(
             pickedImage.waitForExistence(timeout: elementWaitingTime),
             "Picked image not displayed"
         )
 
-        // ✅ Re-check (coverage boost)
         XCTAssertTrue(pickedImage.exists)
     }
 
@@ -292,15 +267,12 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
 
             handlePermissionInterruption()
 
-            // ✅ ✅ CRITICAL: DO NOT assert picker appearance
-
-            sleep(2) // allow UI to load
+            sleep(2)
 
             let cancelButton = app.buttons["Cancel"].firstMatch
             let doneButton = app.buttons["Done"].firstMatch
             let addButton = app.buttons["Add"].firstMatch
 
-            // ✅ BEST-EFFORT dismissal (not strict)
             if cancelButton.exists {
                 cancelButton.tap()
             } else if doneButton.exists {
@@ -311,11 +283,9 @@ class ImagePickerFromLimitedGalleryUITests: XCTestCase {
                 app.tap()
             }
 
-            // ✅ allow UI to settle before next loop
             sleep(1)
         }
 
-        // ✅ ONLY reliable assertion
         XCTAssertTrue(galleryButton.exists)
     }
 }
