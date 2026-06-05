@@ -421,56 +421,6 @@ class ImagePickerPluginTests: XCTestCase {
         }
     }
 
-    @available(iOS 14.0, *)
-    func testPickImageDoesntRequestAuthorization() {
-        let mockHandler = MockDeviceCapabilityHandler()
-
-        mockHandler.photoLibraryAuthorizationStatusResult = .notDetermined
-
-        let plugin = ImagePickerPlugin(
-            viewProvider: StubViewProvider(viewController: UIViewController()),
-            deviceCapabilityHandler: mockHandler
-        )
-
-        plugin.pickImage(
-            source: SourceSpecification(type: .gallery, camera: .front),
-            maxSize: MaxSize(width: nil, height: nil),
-            imageQuality: nil,
-            requestFullMetadata: true
-        ) { _ in
-        }
-
-        XCTAssertFalse(mockHandler.requestPhotoLibraryAuthorizationCalled)
-    }
-
-    @available(iOS 14.0, *)
-    func testPickImageWithoutFullMetadata() {
-        let mockHandler = MockDeviceCapabilityHandler()
-
-        let plugin = ImagePickerPlugin(
-            viewProvider: StubViewProvider(viewController: UIViewController()),
-            deviceCapabilityHandler: mockHandler
-        )
-
-        plugin.pickImage(
-            source: SourceSpecification(
-                type: .gallery,
-                camera: .front
-            ),
-            maxSize: MaxSize(
-                width: nil,
-                height: nil
-            ),
-            imageQuality: nil,
-            requestFullMetadata: false
-        ) { _ in
-        }
-
-        XCTAssertFalse(mockHandler.photoLibraryAuthorizationStatusCalled)
-
-            XCTAssertNotNil(plugin.callContext)
-    }
-
     func testLaunchPHPicker_WithNoTypes_DoesNotCrash() {
         if #available(iOS 14, *) {
             let plugin = ImagePickerPlugin(viewProvider: StubViewProvider(viewController: UIViewController()))
@@ -1751,7 +1701,7 @@ class ImagePickerPluginTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
-    func testLaunchPHPicker_WithFullMetadata_ChecksAuthorization() {
+    func testLaunchPHPicker_DoesNotCheckAuthorization() {
         if #available(iOS 14, *) {
             let mockHandler = MockDeviceCapabilityHandler()
 
@@ -1762,46 +1712,16 @@ class ImagePickerPluginTests: XCTestCase {
 
             let context = ImagePickerMethodCallContext { _, _ in }
 
-            // ✅ Case 1: Full metadata + authorized
-            mockHandler.photoLibraryAuthorizationStatusResult = .authorized
+            // ✅ Case 1: Full metadata
             context.requestFullMetadata = true
-
             plugin.launchPHPicker(with: context)
+            XCTAssertFalse(mockHandler.photoLibraryAuthorizationStatusCalled)
 
-
-            // ✅ Case 2: Full metadata + limited authorization (branch coverage)
-            mockHandler.photoLibraryAuthorizationStatusCalled = false
-            mockHandler.photoLibraryAuthorizationStatusResult = .limited
-            context.requestFullMetadata = true
-
-            plugin.launchPHPicker(with: context)
-
-
-            // ✅ Case 3: Full metadata + denied (failure branch)
-            mockHandler.photoLibraryAuthorizationStatusCalled = false
-            mockHandler.photoLibraryAuthorizationStatusResult = .denied
-            context.requestFullMetadata = true
-
-            plugin.launchPHPicker(with: context)
-
-
-            // ✅ Case 4: requestFullMetadata = false (authorization should not be required path)
+            // ✅ Case 2: No full metadata
             mockHandler.photoLibraryAuthorizationStatusCalled = false
             context.requestFullMetadata = false
-
             plugin.launchPHPicker(with: context)
-
-            // Depending on implementation this may or may not be called.
-            // We still assert execution flow.
-            XCTAssertNotNil(plugin.callContext)
-
-            // ✅ Case 5: Repeat call (ensures execution tracking)
-            mockHandler.photoLibraryAuthorizationStatusCalled = false
-            context.requestFullMetadata = true
-            mockHandler.photoLibraryAuthorizationStatusResult = .authorized
-
-            plugin.launchPHPicker(with: context)
-
+            XCTAssertFalse(mockHandler.photoLibraryAuthorizationStatusCalled)
         }
     }
 
@@ -2071,6 +1991,57 @@ class ImagePickerPluginTests: XCTestCase {
         XCTAssertNil(plugin.previousKeyWindow)
     }
 
+  @available(iOS 14.0, *)
+    func testPickImageDoesntRequestAuthorization() {
+        let mockHandler = MockDeviceCapabilityHandler()
+
+        mockHandler.photoLibraryAuthorizationStatusResult = .notDetermined
+
+        let plugin = ImagePickerPlugin(
+            viewProvider: StubViewProvider(viewController: UIViewController()),
+            deviceCapabilityHandler: mockHandler
+        )
+
+        plugin.pickImage(
+            source: SourceSpecification(type: .gallery, camera: .front),
+            maxSize: MaxSize(width: nil, height: nil),
+            imageQuality: nil,
+            requestFullMetadata: true
+        ) { _ in
+        }
+
+        XCTAssertFalse(mockHandler.requestPhotoLibraryAuthorizationCalled)
+    }
+
+    @available(iOS 14.0, *)
+    func testPickImageWithoutFullMetadata() {
+        let mockHandler = MockDeviceCapabilityHandler()
+
+        let plugin = ImagePickerPlugin(
+            viewProvider: StubViewProvider(viewController: UIViewController()),
+            deviceCapabilityHandler: mockHandler
+        )
+
+        plugin.pickImage(
+            source: SourceSpecification(
+                type: .gallery,
+                camera: .front
+            ),
+            maxSize: MaxSize(
+                width: nil,
+                height: nil
+            ),
+            imageQuality: nil,
+            requestFullMetadata: false
+        ) { _ in
+        }
+
+        XCTAssertFalse(mockHandler.photoLibraryAuthorizationStatusCalled)
+
+            XCTAssertNotNil(plugin.callContext)
+    }
+
+
     func testPresentationControllerDidDismiss_Full() {
         let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
 
@@ -2295,6 +2266,10 @@ class ImagePickerPluginTests: XCTestCase {
     }
 
     class TestPluginRegistrar: NSObject, FlutterPluginRegistrar, @unchecked Sendable {
+        func valuePublished(byPlugin pluginKey: String) -> NSObject? {
+            return nil
+        }
+        
         var publishedInstance: Any?
         func messenger() -> FlutterBinaryMessenger {
             return TestBinaryMessenger()

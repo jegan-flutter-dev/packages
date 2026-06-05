@@ -152,10 +152,10 @@ class ImagePickerFromGalleryUITests: XCTestCase {
                     pickButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
                 }
             }
-            handlePermissionInterruption()
             if galleryCancel.waitForExistence(timeout: 15) {
                 return
             }
+            // Permission popup check is removed as PHPicker doesn't need it.
             attempts += 1
         }
         XCTAssertTrue(galleryCancel.exists, "Gallery (Cancel button) did not appear after tapping PICK")
@@ -299,7 +299,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         let pickButton = findPickButton()
 
         if !pickButton.exists {
-            galleryButton.tap()
+            galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         }
 
         XCTAssertTrue(findPickButton().waitForExistence(timeout: 10))
@@ -308,7 +308,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
     func testKeyboardDismissalFlow() {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
-        galleryButton.tap()
+        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         let widthField = app.textFields["Enter maxWidth if desired"].firstMatch
 
@@ -331,7 +331,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
 
-        galleryButton.tap()
+        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         var pickButton = findPickButton()
         var pickAvailable = pickButton.waitForExistence(timeout: 5)
@@ -349,8 +349,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         XCTAssertTrue(pickAvailable, "PICK button not found")
 
         pickButton.tap()
-
-        // ✅ DO NOT call handlePermissionInterruption()
 
         // ✅ Let system stabilize
         sleep(2)
@@ -373,7 +371,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
     func testPickerDismiss_BackButtonFallback() {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
-        galleryButton.tap()
+        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         tapPickButtonAndVerifyGallery()
 
@@ -389,26 +387,11 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         XCTAssertTrue(galleryButton.waitForExistence(timeout: 5))
     }
 
-    func testPermissionInterceptionTrackerFlag() {
-        let galleryButton = findGalleryButton()
-        XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
-        galleryButton.tap()
-
-        let pickButton = findPickButton()
-        XCTAssertTrue(pickButton.waitForExistence(timeout: 10))
-        pickButton.tap()
-
-        // ✅ Trigger permission
-        handlePermissionInterruption()
-
-        // ✅ Verify tracker changed
-    }
-
     func testKeyboardDismissal_FallbackTap() {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
 
-        galleryButton.tap()
+        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         let widthField = app.textFields["Enter maxWidth if desired"].firstMatch
 
@@ -438,7 +421,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
 
         for _ in 0 ..< 2 {
-            galleryButton.tap()
+            galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
             tapPickButtonAndVerifyGallery()
 
@@ -460,7 +443,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
 
-        galleryButton.tap()
+        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         var pickButton = findPickButton()
 
@@ -508,7 +491,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
 
-        galleryButton.tap()
+        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         let pickButton = findPickButton()
         XCTAssertTrue(pickButton.waitForExistence(timeout: 10))
@@ -535,7 +518,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
 
-        galleryButton.tap()
+        galleryButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         tapPickButtonAndVerifyGallery()
 
@@ -545,25 +528,5 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         app.swipeUp()
 
         XCTAssertTrue(true)
-    }
-
-    func testPermissionTracker_NoInterception() {
-        GalleryInterceptionTracker.shared.intercepted = false
-
-        let galleryButton = findGalleryButton()
-        XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
-
-        galleryButton.tap()
-
-        let pickButton = findPickButton()
-        XCTAssertTrue(pickButton.waitForExistence(timeout: 10))
-
-        pickButton.tap()
-
-        // ✅ DO NOT call handler
-
-        sleep(1)
-
-        XCTAssertFalse(GalleryInterceptionTracker.shared.intercepted)
     }
 }
