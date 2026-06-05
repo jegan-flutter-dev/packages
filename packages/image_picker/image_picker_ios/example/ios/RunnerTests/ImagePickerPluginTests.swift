@@ -1102,7 +1102,8 @@ class ImagePickerPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
             guard let reply = reply,
-                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+            else {
                 XCTFail("Reply should not be nil")
                 return
             }
@@ -1128,7 +1129,8 @@ class ImagePickerPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
             guard let reply = reply,
-                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+            else {
                 XCTFail("Reply should not be nil")
                 return
             }
@@ -1175,7 +1177,8 @@ class ImagePickerPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
             guard let reply = reply,
-                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+            else {
                 XCTFail("Reply should not be nil")
                 return
             }
@@ -1201,7 +1204,8 @@ class ImagePickerPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
             guard let reply = reply,
-                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+            else {
                 XCTFail("Reply should not be nil")
                 return
             }
@@ -1249,7 +1253,8 @@ class ImagePickerPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Reply called")
         handler?(message) { reply in
             guard let reply = reply,
-                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+            else {
                 XCTFail("Reply should not be nil")
                 return
             }
@@ -1297,7 +1302,8 @@ class ImagePickerPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Reply called with error")
         handler?(message) { reply in
             guard let reply = reply,
-                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+            else {
                 XCTFail("Reply should not be nil")
                 return
             }
@@ -1382,7 +1388,8 @@ class ImagePickerPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Reply called with generic error")
         handler?(message) { reply in
             guard let reply = reply,
-                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?] else {
+                  let decoded = MessagesPigeonCodec.shared.decode(reply) as? [Any?]
+            else {
                 XCTFail("Reply should not be nil")
                 return
             }
@@ -1991,7 +1998,7 @@ class ImagePickerPluginTests: XCTestCase {
         XCTAssertNil(plugin.previousKeyWindow)
     }
 
-  @available(iOS 14.0, *)
+    @available(iOS 14.0, *)
     func testPickImageDoesntRequestAuthorization() {
         let mockHandler = MockDeviceCapabilityHandler()
 
@@ -2038,9 +2045,8 @@ class ImagePickerPluginTests: XCTestCase {
 
         XCTAssertFalse(mockHandler.photoLibraryAuthorizationStatusCalled)
 
-            XCTAssertNotNil(plugin.callContext)
+        XCTAssertNotNil(plugin.callContext)
     }
-
 
     func testPresentationControllerDidDismiss_Full() {
         let plugin = ImagePickerPlugin(viewProvider: StubViewProvider())
@@ -2266,10 +2272,10 @@ class ImagePickerPluginTests: XCTestCase {
     }
 
     class TestPluginRegistrar: NSObject, FlutterPluginRegistrar, @unchecked Sendable {
-        func valuePublished(byPlugin pluginKey: String) -> NSObject? {
+        func valuePublished(byPlugin _: String) -> NSObject? {
             return nil
         }
-        
+
         var publishedInstance: Any?
         func messenger() -> FlutterBinaryMessenger {
             return TestBinaryMessenger()

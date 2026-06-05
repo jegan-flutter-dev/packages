@@ -27,7 +27,6 @@ class ImagePickerMethodCallContext {
     }
 }
 
-/// Protocol for handling device capabilities and authorizations.
 protocol DeviceCapabilityHandler {
     func isSourceTypeAvailable(_ sourceType: UIImagePickerController.SourceType) -> Bool
     func isCameraDeviceAvailable(_ cameraDevice: UIImagePickerController.CameraDevice) -> Bool
@@ -184,8 +183,6 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         }
     }
 
-    // MARK: - ImagePickerApi
-
     func pickImage(
         source: SourceSpecification, maxSize: MaxSize, imageQuality: Int64?,
         requestFullMetadata: Bool,
@@ -339,8 +336,6 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         }
     }
 
-    // MARK: - Internal logic
-
     func cancelInProgressCall() {
         if callContext != nil {
             let pigeonError = PigeonError(
@@ -468,13 +463,9 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         return quality / 100.0
     }
 
-    // MARK: - UIAdaptivePresentationControllerDelegate
-
     public func presentationControllerDidDismiss(_: UIPresentationController) {
         sendCallResult(pathList: nil)
     }
-
-    // MARK: - PHPickerViewControllerDelegate
 
     @available(iOS 14, *)
     public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
@@ -533,8 +524,6 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
 
         OperationQueue.main.addOperation(sendListOperation)
     }
-
-    // MARK: - UIImagePickerControllerDelegate
 
     public func imagePickerController(
         _ picker: UIImagePickerController,
@@ -633,8 +622,6 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         sendCallResult(pathList: nil)
     }
 
-    // MARK: - Result Management
-
     private func saveImage(
         withOriginalImageData originalImageData: Data?,
         image: UIImage,
@@ -672,19 +659,16 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
     }
 
     func presentingViewControllerForImagePickerInNewWindow() -> UIViewController {
-        // ✅ If blocker exists
         if let blocker = interactionBlockerWindow,
            let rootVC = blocker.rootViewController
         {
             return rootVC
         }
 
-        // ✅ Step 1: safely unwrap VC
         guard let topController = viewProvider.viewController else {
             return UIViewController()
         }
 
-        // ✅ Step 2: safely access window (fix)
         guard let presentingWindow = topController.viewIfLoaded?.window else {
             return topController
         }

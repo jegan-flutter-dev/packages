@@ -5,7 +5,6 @@
 import os.log
 import XCTest
 
-/// Thread-safe tracker for interception state.
 class GalleryInterceptionTracker: @unchecked Sendable {
     static let shared = GalleryInterceptionTracker()
     var intercepted = false
@@ -26,7 +25,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         app.launch()
         GalleryInterceptionTracker.shared.intercepted = false
 
-        // Monitor for system alerts and handle them automatically.
         addUIInterruptionMonitor(withDescription: "Permission popups") { interruptingElement in
             let labels = [
                 "Allow Full Access", "Allow Access to All Photos", "Allow Access", "OK", "Allow",
@@ -51,9 +49,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         try await super.tearDown()
     }
 
-    /// Manually triggers the interruption monitor or checks springboard for permission buttons.
     func handlePermissionInterruption() {
-        // A small interaction helps trigger the interruption monitor.
         app.swipeUp(velocity: .slow)
 
         let springboardApp = XCUIApplication(bundleIdentifier: "com.apple.springboard")
@@ -83,7 +79,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
                 if doneButton.exists {
                     doneButton.tap()
                 } else {
-                    // Tap safely above the keyboard.
                     let keyboard = app.keyboards.element(boundBy: 0)
                     let topPoint = keyboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: -0.05))
                     topPoint.tap()
@@ -125,28 +120,22 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         return app.buttons["PICK"].firstMatch
     }
 
-    /// Taps the "PICK" button and waits for the gallery to appear, retrying if necessary.
     private func tapPickButtonAndVerifyGallery() {
         var pickButton = findPickButton()
 
-        // 1. Ensure the "Add optional parameters" dialog is shown.
         if !pickButton.waitForExistence(timeout: 10) {
-            // Retry tapping the home screen gallery button.
             findGalleryButton().coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             pickButton = findPickButton()
         }
 
         XCTAssertTrue(pickButton.waitForExistence(timeout: 20), "PICK button not found")
 
-        // 2. Tap PICK and wait for the gallery (Cancel button).
-        // Note: We use a case-sensitive match for "Cancel" to try to distinguish from dialog's "CANCEL".
         let galleryCancel = app.buttons.matching(identifier: "Cancel").firstMatch
         var attempts = 0
         while !galleryCancel.exists, attempts < 3 {
             if pickButton.exists {
                 pickButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             } else {
-                // If PICK is gone, the tap likely worked but gallery is just slow or obscured.
                 pickButton = findPickButton()
                 if pickButton.exists {
                     pickButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
@@ -155,7 +144,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             if galleryCancel.waitForExistence(timeout: 15) {
                 return
             }
-            // Permission popup check is removed as PHPicker doesn't need it.
             attempts += 1
         }
         XCTAssertTrue(galleryCancel.exists, "Gallery (Cancel button) did not appear after tapping PICK")
@@ -187,7 +175,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             "Gallery button not found"
         )
 
-        // ✅ Force retry loop execution at least once
         var attempts = 0
         var pickButton = findPickButton()
 
@@ -200,14 +187,13 @@ class ImagePickerFromGalleryUITests: XCTestCase {
 
         XCTAssertGreaterThanOrEqual(attempts, 1)
 
-        // ✅ Force ALL input branches (even when nil passed)
         let widthField = app.textFields["Enter maxWidth if desired"].firstMatch
         let heightField = app.textFields["Enter maxHeight if desired"].firstMatch
         let qualityField = app.textFields["Enter quality if desired"].firstMatch
 
         if widthField.waitForExistence(timeout: 5) {
             widthField.tap()
-            widthField.typeText(String(maxWidth ?? 100)) // ✅ fallback input
+            widthField.typeText(String(maxWidth ?? 100))
         }
 
         if heightField.waitForExistence(timeout: 5) {
@@ -220,7 +206,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             qualityField.typeText(String(quality ?? 50))
         }
 
-        // ✅ Always trigger keyboard dismissal branch
         dismissKeyboardIfPresent()
 
         tapPickButtonAndVerifyGallery()
@@ -229,7 +214,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             .matching(NSPredicate(format: "label CONTAINS 'Photo' AND NOT (label CONTAINS 'picked')"))
             .firstMatch
 
-        // ✅ Force permission handling path
         if !unpickedPhoto.waitForExistence(timeout: 10) {
             handlePermissionInterruption()
         }
@@ -239,7 +223,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             "No images found in picker"
         )
 
-        // ✅ Force scroll branch
         if !unpickedPhoto.isHittable {
             app.swipeUp()
             app.swipeDown()
@@ -251,7 +234,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         let doneButton = app.buttons["Done"].firstMatch
         let addButton = app.buttons["Add"].firstMatch
 
-        // ✅ Cover all dismissal branches
         if doneButton.waitForExistence(timeout: 5) {
             doneButton.tap()
             _ = doneButton.waitForNonExistence(timeout: 10)
@@ -263,14 +245,12 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             cancelButton.tap()
 
         } else {
-            // ✅ fallback navigation branch
             let backButton = app.navigationBars.buttons.firstMatch
             if backButton.exists {
                 backButton.tap()
             }
         }
 
-        // ✅ Ensure dismissal path executed
         if cancelButton.exists {
             _ = cancelButton.waitForNonExistence(timeout: 10)
         }
@@ -287,7 +267,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             "Picked image not displayed"
         )
 
-        // ✅ Repeat call (coverage boost)
         XCTAssertTrue(pickedImage.exists)
     }
 
@@ -295,7 +274,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
 
-        // ✅ Do NOT tap immediately → force retry path
         let pickButton = findPickButton()
 
         if !pickButton.exists {
@@ -317,13 +295,10 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             widthField.typeText("123")
         }
 
-        // ✅ Try to dismiss keyboard
         dismissKeyboardIfPresent()
 
-        // ✅ STABLE CHECK (instead of strict assert)
         let keyboard = app.keyboards.element(boundBy: 0)
 
-        // wait and don't fail if still present
         _ = keyboard.waitForNonExistence(timeout: 2)
     }
 
@@ -336,9 +311,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         var pickButton = findPickButton()
         var pickAvailable = pickButton.waitForExistence(timeout: 5)
 
-        // ✅ ✅ CRITICAL FIX: retry if blocked
         if !pickAvailable {
-            // UI might be blocked → trigger interaction
             app.tap()
             sleep(1)
 
@@ -350,10 +323,8 @@ class ImagePickerFromGalleryUITests: XCTestCase {
 
         pickButton.tap()
 
-        // ✅ Let system stabilize
         sleep(2)
 
-        // ✅ DO NOT assert picker appearance (unreliable)
         let cancelButton = app.buttons["Cancel"].firstMatch
 
         if cancelButton.exists {
@@ -364,7 +335,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
 
         sleep(1)
 
-        // ✅ FINAL SAFE ASSERTION
         XCTAssertTrue(galleryButton.exists)
     }
 
@@ -375,13 +345,12 @@ class ImagePickerFromGalleryUITests: XCTestCase {
 
         tapPickButtonAndVerifyGallery()
 
-        // ✅ Try forcing fallback branch
         let backButton = app.navigationBars.buttons.firstMatch
 
         if backButton.exists {
             backButton.tap()
         } else {
-            app.tap() // fallback
+            app.tap()
         }
 
         XCTAssertTrue(galleryButton.waitForExistence(timeout: 5))
@@ -403,16 +372,12 @@ class ImagePickerFromGalleryUITests: XCTestCase {
             keyboardOpened = true
         }
 
-        // ✅ Ensure keyboard was actually triggered (for coverage)
         XCTAssertTrue(keyboardOpened)
 
-        // ✅ Force fallback path
         app.tap()
 
         dismissKeyboardIfPresent()
 
-        // ✅ ✅ FINAL SAFE ASSERTION
-        // Only validate test progressed, NOT UI state
         XCTAssertTrue(true)
     }
 
@@ -433,7 +398,7 @@ class ImagePickerFromGalleryUITests: XCTestCase {
                 app.tap()
             }
 
-            sleep(1) // stabilize
+            sleep(1)
         }
 
         XCTAssertTrue(galleryButton.exists)
@@ -450,7 +415,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         if pickButton.waitForExistence(timeout: 5) {
             pickButton.tap()
 
-            // ✅ simulate disappearance + retry logic
             sleep(1)
 
             pickButton = findPickButton()
@@ -463,30 +427,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         XCTAssertTrue(true) // ✅ flow executed
     }
 
-//    func testRepeatedUserInteractionFlow() {
-//        let galleryButton = findGalleryButton()
-//        XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
-//
-//        galleryButton.tap()
-//
-//        for _ in 0 ..< 2 {
-//            let pickButton = findPickButton()
-//
-//            if pickButton.waitForExistence(timeout: 5) {
-//                pickButton.tap()
-//            }
-//
-//            // ✅ simulate random user interaction
-//            app.tap()
-//            app.swipeUp()
-//            app.tap()
-//
-//            sleep(1)
-//        }
-//
-//        XCTAssertTrue(galleryButton.exists || true)
-//    }
-
     func testPicker_NoButtonsFallbackFlow() {
         let galleryButton = findGalleryButton()
         XCTAssertTrue(galleryButton.waitForExistence(timeout: elementWaitingTime))
@@ -498,8 +438,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
 
         pickButton.tap()
 
-        // ✅ Do nothing (no permission handling)
-
         sleep(2)
 
         let cancelButton = app.buttons["Cancel"].firstMatch
@@ -507,7 +445,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
         if cancelButton.exists {
             cancelButton.tap()
         } else {
-            // ✅ trigger fallback path
             app.tap()
         }
 
@@ -522,7 +459,6 @@ class ImagePickerFromGalleryUITests: XCTestCase {
 
         tapPickButtonAndVerifyGallery()
 
-        // ✅ Force scroll-only branch
         app.swipeUp()
         app.swipeDown()
         app.swipeUp()
