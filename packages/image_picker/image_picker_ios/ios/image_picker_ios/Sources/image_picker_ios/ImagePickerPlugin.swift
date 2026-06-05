@@ -136,6 +136,7 @@ public class ImagePickerPlugin: NSObject, FlutterPlugin, ImagePickerApi,
         pickerViewController.delegate = self
         pickerViewController.presentationController?.delegate = self
         callContext = context
+
         showPhotoLibrary(with: pickerViewController)
     }
 
