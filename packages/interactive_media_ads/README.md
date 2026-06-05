@@ -105,8 +105,7 @@ class AdExampleWidget extends StatefulWidget {
   State<AdExampleWidget> createState() => _AdExampleWidgetState();
 }
 
-class _AdExampleWidgetState extends State<AdExampleWidget>
-    with WidgetsBindingObserver {
+class _AdExampleWidgetState extends State<AdExampleWidget> with WidgetsBindingObserver {
   // IMA sample tag for a pre-, mid-, and post-roll, single inline video ad. See more IMA sample
   // tags at https://developers.google.com/interactive-media-ads/docs/sdks/html5/client-side/tags
   static const String _adTagUrl =
@@ -132,8 +131,7 @@ class _AdExampleWidgetState extends State<AdExampleWidget>
 
   // Provides the SDK with the current playback progress of the content video.
   // This is required to support mid-roll ads.
-  final ContentProgressProvider _contentProgressProvider =
-      ContentProgressProvider();
+  final ContentProgressProvider _contentProgressProvider = ContentProgressProvider();
   // ···
   @override
   Widget build(BuildContext context) {
@@ -206,9 +204,7 @@ void initState() {
   // ···
   _contentVideoController =
       VideoPlayerController.networkUrl(
-          Uri.parse(
-            'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
-          ),
+          Uri.parse('https://storage.googleapis.com/gvabox/media/samples/stock.mp4'),
         )
         ..addListener(() {
           if (_contentVideoController.value.isCompleted) {
@@ -245,15 +241,13 @@ Widget build(BuildContext context) {
                     // loaded and can't be removed between ads. This handles clicks for
                     // ads.
                     _adDisplayContainer,
-                    if (_shouldShowContentVideo)
-                      VideoPlayer(_contentVideoController),
+                    if (_shouldShowContentVideo) VideoPlayer(_contentVideoController),
                   ],
                 ),
               ),
       ),
     ),
-    floatingActionButton:
-        _contentVideoController.value.isInitialized && _shouldShowContentVideo
+    floatingActionButton: _contentVideoController.value.isInitialized && _shouldShowContentVideo
         ? FloatingActionButton(
             onPressed: () {
               setState(() {
@@ -262,11 +256,7 @@ Widget build(BuildContext context) {
                     : _contentVideoController.play();
               });
             },
-            child: Icon(
-              _contentVideoController.value.isPlaying
-                  ? Icons.pause
-                  : Icons.play_arrow,
-            ),
+            child: Icon(_contentVideoController.value.isPlaying ? Icons.pause : Icons.play_arrow),
           )
         : null,
   );
@@ -282,10 +272,7 @@ Handle requesting ads and add event listeners to handle when content should be d
 ```dart
 Future<void> _requestAds(AdDisplayContainer container) {
   return _adsLoader.requestAds(
-    AdsRequest(
-      adTagUrl: _adTagUrl,
-      contentProgressProvider: _contentProgressProvider,
-    ),
+    AdsRequest(adTagUrl: _adTagUrl, contentProgressProvider: _contentProgressProvider),
   );
 }
 
@@ -295,20 +282,19 @@ Future<void> _resumeContent() async {
   });
 
   if (_adsManager != null) {
-    _contentProgressTimer = Timer.periodic(
-      const Duration(milliseconds: 200),
-      (Timer timer) async {
-        if (_contentVideoController.value.isInitialized) {
-          final Duration? progress = await _contentVideoController.position;
-          if (progress != null) {
-            await _contentProgressProvider.setProgress(
-              progress: progress,
-              duration: _contentVideoController.value.duration,
-            );
-          }
+    _contentProgressTimer = Timer.periodic(const Duration(milliseconds: 200), (
+      Timer timer,
+    ) async {
+      if (_contentVideoController.value.isInitialized) {
+        final Duration? progress = await _contentVideoController.position;
+        if (progress != null) {
+          await _contentProgressProvider.setProgress(
+            progress: progress,
+            duration: _contentVideoController.value.duration,
+          );
         }
-      },
-    );
+      }
+    });
   }
 
   await _contentVideoController.play();
